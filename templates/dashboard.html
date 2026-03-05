@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartBus Pass · modern dashboard</title>
+    <!-- Bootstrap 5 + icons + updated fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google font Inter (modern sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- styles inlined for clarity (same logic, refreshed UI) -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f5f9; }
+        .dashboard-container { display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR modern glass --- */
+        .sidebar {
+            width: 280px;
+            background: rgba(18, 25, 38, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.1);
+        }
+        .sidebar-header { padding: 28px 24px 16px; display: flex; align-items: center; gap: 12px; }
+        .sidebar-header i { color: #3b82f6; filter: drop-shadow(0 4px 8px rgba(59,130,246,0.3)); }
+        .sidebar-header h4 { font-weight: 600; font-size: 1.4rem; letter-spacing: -0.02em; margin: 0; color: white; }
+        .user-info { text-align: center; padding: 20px 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .user-info img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; padding: 3px; background: white; }
+        .user-info h6 { font-weight: 600; margin: 12px 0 4px; font-size: 1.1rem; }
+        .user-info small { background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 30px; font-weight: 500; }
+        .sidebar-nav { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+        .sidebar-nav .nav-link { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 14px; color: rgba(255,255,255,0.75); font-weight: 500; transition: all 0.2s; font-size: 0.95rem; }
+        .sidebar-nav .nav-link i { width: 24px; font-size: 1.2rem; color: rgba(255,255,255,0.5); }
+        .sidebar-nav .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
+        .sidebar-nav .nav-link.active { background: #3b82f6; color: white; box-shadow: 0 8px 16px -4px rgba(59,130,246,0.4); }
+        .sidebar-nav .nav-link.active i { color: white; }
+        .sidebar-footer { padding: 20px 20px 30px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .language-selector select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 0.9rem; border-radius: 30px; padding: 6px 14px; cursor: pointer; }
+        .language-selector select option { background: #1e293b; color: white; }
+        .btn-outline-light { border-radius: 40px; border-width: 1.5px; font-weight: 600; padding: 8px 0; backdrop-filter: blur(5px); }
+
+        /* --- MAIN CONTENT area --- */
+        .main-content { flex: 1; background: #f2f5f9; padding: 24px 32px; overflow-y: auto; }
+        .content-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+        .content-header h2 { font-weight: 700; font-size: 1.9rem; color: #0b1a2f; letter-spacing: -0.02em; margin: 0; }
+        .header-actions { display: flex; align-items: center; gap: 18px; }
+        #refreshBtn { border-radius: 40px; width: 44px; height: 44px; border: 1px solid #dae1ec; background: white; color: #24416b; transition: 0.15s; }
+        #refreshBtn:hover { background: #eef2f8; transform: rotate(15deg); }
+        .notification-bell { position: relative; background: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border: 1px solid #e9eef3; cursor: pointer; }
+        .notification-bell i { font-size: 1.4rem; color: #2c3e5c; }
+        .notification-bell .badge { position: absolute; top: -2px; right: -2px; background: #e7462c; color: white; border-radius: 30px; font-size: 0.7rem; padding: 3px 6px; font-weight: 700; border: 2px solid white; }
+
+        /* stats cards : glass + clean */
+        .stats-card { background: white; border-radius: 28px; padding: 22px 20px; box-shadow: 0 12px 30px -8px rgba(0,20,50,0.1); display: flex; align-items: center; gap: 18px; border: 1px solid #ffffff50; backdrop-filter: blur(2px); transition: transform 0.15s; }
+        .stats-card:hover { transform: translateY(-4px); box-shadow: 0 22px 35px -12px rgba(27, 58, 112, 0.2); }
+        .stats-icon { width: 58px; height: 58px; background: linear-gradient(145deg, #eef4ff, #dfe8f5); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 1.8rem; }
+        .stats-details h3 { font-weight: 700; font-size: 1.8rem; margin: 0; line-height: 1.2; color: #0e1d3a; }
+        .stats-details p { margin: 0; color: #62748c; font-weight: 500; font-size: 0.9rem; }
+
+        /* active pass card — large & premium */
+        .active-pass-card { background: white; border-radius: 32px; padding: 28px; box-shadow: 0 18px 40px -12px #1e3a8a30; border: 1px solid #ffffff; }
+        .pass-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .pass-header h4 { font-weight: 700; font-size: 1.5rem; color: #0b213b; }
+        .pass-header .text-muted { font-size: 0.9rem; font-weight: 500; background: #f0f4fe; display: inline-block; padding: 4px 14px; border-radius: 40px; }
+        .badge.bg-success { background: #1d9d74 !important; padding: 8px 16px; font-weight: 600; border-radius: 40px; font-size: 0.9rem; }
+        .pass-details p { margin-bottom: 14px; color: #2a405c; font-weight: 500; }
+        .pass-details i { color: #3b82f6; width: 24px; }
+        .pass-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+        .pass-actions .btn { border-radius: 40px; padding: 10px 24px; font-weight: 600; font-size: 0.95rem; }
+        .btn-primary { background: #2563eb; border: none; box-shadow: 0 6px 14px #2563eb60; }
+        .btn-outline-primary { border: 1.5px solid #2563eb; color: #2563eb; }
+        .btn-outline-secondary { border: 1.5px solid #b9c7dd; color: #385777; background: white; }
+
+        /* qr preview modern */
+        .qr-preview-card { background: white; border-radius: 32px; padding: 28px 16px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 18px 30px -12px rgba(33,33,68,0.1); }
+        .qr-placeholder { background: #f0f5ff; border-radius: 44px; padding: 36px 12px; color: #3865a0; }
+        .qr-placeholder i { opacity: 0.7; }
+        #qrImage { border-radius: 24px; padding: 8px; background: white; box-shadow: 0 15px 25px -8px rgba(0,0,0,0.15); max-width: 160px; margin: 0 auto; }
+
+        /* card for recent trips */
+        .card { border: none; border-radius: 32px; background: white; box-shadow: 0 15px 30px -12px #b3c7e0; overflow: hidden; }
+        .card-header { background: white; border-bottom: 1px solid #eef3fa; padding: 22px 28px; }
+        .card-header h5 { font-weight: 700; color: #14273e; font-size: 1.3rem; margin: 0; }
+        .card-body { padding: 0 28px 28px 28px; }
+        .table { margin: 0; color: #1b3149; font-weight: 500; }
+        .table thead th { border-bottom: 2px solid #e1eaf2; font-weight: 600; color: #5f7392; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; padding: 18px 8px 12px; }
+        .table td { padding: 18px 8px; border-bottom: 1px solid #ecf2f9; vertical-align: middle; }
+        .badge.bg-success { background: #17946b10 !important; color: #0e7a55; font-weight: 600; padding: 6px 14px; border-radius: 30px; }
+
+        .alert-info { background: #dae9ff; border: none; border-radius: 40px; color: #14467e; font-weight: 500; padding: 20px 28px; }
+
+        /* modal fine */
+        .modal-content { border-radius: 40px; border: none; padding: 12px; }
+        .modal-header { border: none; padding-bottom: 0; }
+        .modal-title { font-weight: 700; color: #0e1d3a; }
+
+        /* responsive */
+        @media (max-width: 992px) { .sidebar { width: 100px; } .sidebar-header h4, .user-info h6, .user-info small, .sidebar-nav span, .sidebar-footer .btn span { display: none; } .sidebar-nav .nav-link { justify-content: center; padding: 16px 0; } .sidebar-footer { padding: 16px; } }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar - same structure, updated look -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-bus fa-2x"></i>
+                <h4>SmartBus Pass</h4>
+            </div>
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name={{ current_user.full_name|urlencode }}&background=3b82f6&color=fff&size=72" alt="Profile">
+                <h6>{{ current_user.full_name }}</h6>
+                <small>{{ current_user.user_type|title }}</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link active"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                <a href="{{ url_for('apply_pass') }}" class="nav-link"><i class="fas fa-ticket-alt"></i><span>Apply for Pass</span></a>
+                <a href="{{ url_for('renew_pass_page') }}" class="nav-link"><i class="fas fa-sync-alt"></i><span>Renew Pass</span></a>
+                <a href="{{ url_for('qr_verification') }}" class="nav-link"><i class="fas fa-qrcode"></i><span>My QR Code</span></a>
+                <a href="{{ url_for('trip_history') }}" class="nav-link"><i class="fas fa-history"></i><span>Trip History</span></a>
+                <a href="{{ url_for('payment') }}" class="nav-link"><i class="fas fa-credit-card"></i><span>Payments</span></a>
+                <a href="{{ url_for('profile') }}" class="nav-link"><i class="fas fa-user"></i><span>Profile</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="language-selector mb-3">
+                    <select class="form-select form-select-sm" id="languageSelect">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light w-100"><i class="fas fa-sign-out-alt me-2"></i><span>Logout</span></a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h2>Welcome back, {{ current_user.full_name }}! 👋</h2>
+                <div class="header-actions">
+                    <button class="btn btn-outline-primary" id="refreshBtn"><i class="fas fa-sync-alt"></i></button>
+                    <div class="notification-bell"><i class="fas fa-bell"></i><span class="badge">3</span></div>
+                </div>
+            </div>
+
+            <!-- Stats cards dynamic (same logic) -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon"><i class="fas fa-bus"></i></div>
+                        <div class="stats-details">
+                            <h3>{% if active_pass %}Active{% else %}No Pass{% endif %}</h3>
+                            <p>Pass Status</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stats-details">
+                            <h3>{% if active_pass %}{{ (active_pass.end_date - now).days }}{% else %}0{% endif %}</h3>
+                            <p>Days Remaining</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon"><i class="fas fa-route"></i></div>
+                        <div class="stats-details">
+                            <h3>{{ recent_trips|length }}</h3>
+                            <p>Recent Trips</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="stats-details">
+                            <h3>₹{{ "%.2f"|format(active_pass.price if active_pass else 0) }}</h3>
+                            <p>Pass Amount</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Pass Section -->
+            {% if active_pass %}
+            <div class="row g-4 mb-5">
+                <div class="col-md-8">
+                    <div class="active-pass-card">
+                        <div class="pass-header">
+                            <div>
+                                <h4>Your Active Bus Pass</h4>
+                                <p class="text-muted">{{ active_pass.pass_type|title }} Pass</p>
+                            </div>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                        <div class="pass-details">
+                            <div class="row">
+                                <div class="col-6">
+                                    <p><i class="fas fa-calendar-alt me-2"></i>Valid From: {{ active_pass.start_date.strftime('%d %b %Y') }}</p>
+                                    <p><i class="fas fa-calendar-check me-2"></i>Valid Until: {{ active_pass.end_date.strftime('%d %b %Y') }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p><i class="fas fa-route me-2"></i>Route: {{ active_pass.route }}</p>
+                                    <p><i class="fas fa-tag me-2"></i>Price: ₹{{ "%.2f"|format(active_pass.price) }}</p>
+                                </div>
+                            </div>
+                            <div class="pass-actions mt-4">
+                                <button class="btn btn-primary" onclick="showQR('{{ active_pass.id }}')"><i class="fas fa-qrcode me-2"></i>Show QR</button>
+                                <button class="btn btn-outline-primary" onclick="toggleAutoRenew({{ active_pass.id }})"><i class="fas fa-sync-alt me-2"></i>{% if active_pass.auto_renew %}Disable{% else %}Enable{% endif %} auto-renew</button>
+                                <button class="btn btn-outline-secondary" onclick="downloadPass({{ active_pass.id }})"><i class="fas fa-download me-2"></i>Download QR</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="qr-preview-card text-center">
+                        <div id="qrContainer" style="display: none;">
+                            <img id="qrImage" src="data:image/png;base64,{{ active_pass.qr_code }}" alt="QR Code" class="img-fluid mb-2">
+                            <p class="small text-muted">Scan while boarding</p>
+                        </div>
+                        <div id="qrPlaceholder" class="qr-placeholder">
+                            <i class="fas fa-qrcode fa-4x mb-3" style="color:#2b4e84;"></i>
+                            <p class="mb-0 fw-semibold">Tap “Show QR” to view</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info d-flex align-items-center mb-5" role="alert">
+                <i class="fas fa-info-circle fa-xl me-3"></i>
+                <div>You don't have an active bus pass. <a href="{{ url_for('apply_pass') }}" class="alert-link fw-bold">Apply for one now →</a></div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Trips card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clock-rotate-left me-2" style="color:#2f5e9c;"></i> Recent Trips</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_trips %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr><th>Date</th><th>Route</th><th>From</th><th>To</th><th>Fare</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for trip in recent_trips %}
+                                <tr>
+                                    <td>{{ trip.timestamp.strftime('%d %b %Y, %I:%M %p') }}</td>
+                                    <td>{{ trip.route }}</td>
+                                    <td>{{ trip.boarding_point }}</td>
+                                    <td>{{ trip.drop_point }}</td>
+                                    <td>${{ "%.2f"|format(trip.fare) }}</td>
+                                    <td><span class="badge bg-success">{{ trip.status }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted py-4 mb-0"><i class="fa-regular fa-clock me-2"></i>No trips recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal (modern) -->
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title">Your QR code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center pt-3">
+                    <img id="modalQRImage" src="" alt="QR" class="img-fluid mb-3" style="max-width:200px; border-radius:24px;">
+                    <p class="small text-secondary">Show to conductor while boarding</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts (same logic, enhanced) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // all functions exactly as original, but with optional smoothness
+        function showQR(passId) {
+            const qrImage = document.getElementById('qrImage');
+            const modalQR = document.getElementById('modalQRImage');
+            if (qrImage) {
+                modalQR.src = qrImage.src;
+                const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+                modal.show();
+            } else {
+                alert('QR code not yet generated. Please try again.');
+            }
+        }
+
+        function toggleAutoRenew(passId) {
+            axios.post(`/auto-renewal-toggle/${passId}`)
+                .then(response => { if (response.data.success) location.reload(); })
+                .catch(error => { console.error('Error:', error); alert('Could not toggle auto-renew.'); });
+        }
+
+        function downloadPass(passId) {
+            const qrImage = document.getElementById('qrImage');
+            if (!qrImage || !qrImage.src || qrImage.src === '') {
+                alert('QR code is not available to download right now.');
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = qrImage.src;
+            link.download = `smartbus-pass-${passId}-qr.png`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        // refresh button simulation (just rotates)
+        document.getElementById('refreshBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            this.classList.add('fa-spin');
+            setTimeout(() => this.classList.remove('fa-spin'), 600);
+            // actual reload if desired: window.location.reload()
+        });
+
+        // Show QR placeholder? (optional: demo click on placeholder shows QR if hidden)
+        // We'll keep exact same behaviour as original: QR hidden until "Show QR Code"
+        // but we unify with modern look
+        window.onload = function() {
+            // handle language switcher (same)
+        };
+    </script>
+</body>
+</html>

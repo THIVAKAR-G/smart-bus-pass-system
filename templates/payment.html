@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments · SmartBus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f4fb; }
+        .dashboard-container { display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR (consistent) --- */
+        .sidebar {
+            width: 280px;
+            background: rgba(18, 25, 38, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.1);
+        }
+        .sidebar-header { padding: 28px 24px 16px; display: flex; align-items: center; gap: 12px; }
+        .sidebar-header i { color: #3b82f6; filter: drop-shadow(0 4px 8px rgba(59,130,246,0.3)); }
+        .sidebar-header h4 { font-weight: 600; font-size: 1.4rem; letter-spacing: -0.02em; margin: 0; color: white; }
+        .user-info { text-align: center; padding: 20px 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .user-info img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; padding: 3px; background: white; }
+        .user-info h6 { font-weight: 600; margin: 12px 0 4px; font-size: 1.1rem; color: white; }
+        .user-info small { background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 30px; font-weight: 500; color: #ddd; }
+        .sidebar-nav { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+        .sidebar-nav .nav-link { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 14px; color: rgba(255,255,255,0.75); font-weight: 500; transition: all 0.2s; font-size: 0.95rem; }
+        .sidebar-nav .nav-link i { width: 24px; font-size: 1.2rem; color: rgba(255,255,255,0.5); }
+        .sidebar-nav .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
+        .sidebar-nav .nav-link.active { background: #3b82f6; color: white; box-shadow: 0 8px 16px -4px rgba(59,130,246,0.4); }
+        .sidebar-nav .nav-link.active i { color: white; }
+        .sidebar-footer { padding: 20px 20px 30px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .btn-outline-light { border-radius: 40px; border-width: 1.5px; font-weight: 600; padding: 8px 0; backdrop-filter: blur(5px); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; background: #f0f4fb; overflow-y: auto; padding: 32px 40px; }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .page-header h2 {
+            font-weight: 800; color: #0b1f3b; font-size: 2.2rem;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .page-header h2 i {
+            color: #3b82f6; background: white; padding: 12px; border-radius: 30px;
+            box-shadow: 0 8px 16px -8px #3b82f6;
+        }
+        .header-balance {
+            background: white; padding: 12px 28px; border-radius: 60px;
+            box-shadow: 0 8px 20px -8px rgba(0,0,0,0.1);
+            font-weight: 600;
+        }
+        .balance-amount { color: #3b82f6; font-size: 1.4rem; font-weight: 800; margin-left: 10px; }
+
+        /* Payment Methods Grid */
+        .methods-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px; margin-bottom: 32px;
+        }
+        .method-card-modern {
+            background: white; border-radius: 32px; padding: 24px 16px;
+            text-align: center; cursor: pointer; border: 2px solid transparent;
+            transition: all 0.2s; box-shadow: 0 10px 25px -10px rgba(0,0,0,0.1);
+        }
+        .method-card-modern:hover {
+            transform: translateY(-4px); border-color: #3b82f6; box-shadow: 0 20px 30px -12px #3b82f6;
+        }
+        .method-card-modern.selected {
+            border-color: #3b82f6; background: linear-gradient(145deg, #f0f7ff, white);
+            box-shadow: 0 20px 30px -10px #3b82f6;
+        }
+        .method-card-modern i { font-size: 2.5rem; color: #3b82f6; margin-bottom: 12px; }
+        .method-card-modern h6 { font-weight: 700; margin-bottom: 4px; }
+        .method-card-modern p { color: #64748b; font-size: 0.8rem; margin: 0; }
+
+        /* Saved Cards Carousel */
+        .saved-cards-section {
+            background: white; border-radius: 40px; padding: 28px; margin-bottom: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+        }
+        .cards-carousel {
+            display: flex; gap: 16px; overflow-x: auto; padding: 8px 4px 16px;
+            scrollbar-width: thin;
+        }
+        .saved-card-modern {
+            min-width: 280px; background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 28px; padding: 20px; color: white; cursor: pointer;
+            transition: 0.2s; border: 2px solid transparent;
+        }
+        .saved-card-modern:hover { transform: scale(1.02); border-color: white; }
+        .saved-card-modern .card-type { font-size: 1.5rem; margin-bottom: 20px; }
+        .saved-card-modern .card-number { font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 16px; }
+        .saved-card-modern .card-expiry { font-size: 0.9rem; opacity: 0.9; }
+
+        /* Payment Form */
+        .payment-form-modern {
+            background: white; border-radius: 40px; padding: 32px;
+            box-shadow: 0 25px 40px -15px rgba(0,0,0,0.15);
+            margin-bottom: 32px;
+        }
+        .form-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group label {
+            font-weight: 600; color: #1e293b; margin-bottom: 8px; display: block;
+            font-size: 0.9rem;
+        }
+        .input-wrapper {
+            position: relative; display: flex; align-items: center;
+        }
+        .input-icon {
+            position: absolute; left: 16px; color: #94a3b8;
+        }
+        .form-control-modern {
+            width: 100%; padding: 14px 16px 14px 45px; border: 2px solid #e2e8f0;
+            border-radius: 30px; font-weight: 500; transition: 0.2s;
+        }
+        .form-control-modern:focus {
+            border-color: #3b82f6; outline: none; box-shadow: 0 0 0 4px #3b82f620;
+        }
+        .card-icons-preview {
+            position: absolute; right: 16px; display: flex; gap: 6px;
+        }
+        .card-icons-preview i { font-size: 1.4rem; color: #94a3b8; }
+
+        /* Coupon Section */
+        .coupon-modern {
+            background: #f8fafc; border-radius: 60px; padding: 8px;
+            display: flex; gap: 8px; margin: 24px 0;
+        }
+        .coupon-modern input {
+            flex: 1; border: none; background: transparent; padding: 14px 20px;
+            font-weight: 500; outline: none;
+        }
+        .coupon-modern button {
+            background: #3b82f6; color: white; border: none; padding: 12px 32px;
+            border-radius: 50px; font-weight: 600; transition: 0.2s;
+        }
+        .coupon-modern button:hover { background: #2563eb; }
+
+        /* Pay Button */
+        .pay-button-modern {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white; border: none; width: 100%; padding: 18px;
+            border-radius: 60px; font-weight: 700; font-size: 1.2rem;
+            box-shadow: 0 20px 30px -10px #3b82f6; transition: 0.2s;
+        }
+        .pay-button-modern:hover { transform: scale(1.02); box-shadow: 0 25px 35px -8px #2563eb; }
+        .pay-button-modern:disabled { opacity: 0.7; }
+
+        /* Summary Card */
+        .summary-card-modern {
+            background: linear-gradient(145deg, #0b1f3b, #142d4f);
+            border-radius: 40px; padding: 32px; color: white; position: sticky; top: 20px;
+            box-shadow: 0 30px 40px -15px #0b1f3b;
+        }
+        .summary-item {
+            display: flex; justify-content: space-between; padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .summary-item.total {
+            border-bottom: none; font-size: 1.5rem; font-weight: 800;
+            padding-top: 20px; color: #fbbf24;
+        }
+        .summary-badge {
+            background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 40px;
+            font-size: 0.8rem; backdrop-filter: blur(4px);
+        }
+
+        /* Transaction History */
+        .history-modern {
+            background: white; border-radius: 40px; padding: 28px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+        }
+        .transaction-item-modern {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px; border-bottom: 1px solid #eef2f6;
+        }
+        .transaction-item-modern:last-child { border-bottom: none; }
+        .transaction-status-modern {
+            padding: 6px 16px; border-radius: 40px; font-weight: 600; font-size: 0.8rem;
+        }
+        .status-success { background: #dcfce7; color: #16a34a; }
+        .status-pending { background: #fef9c3; color: #ca8a04; }
+
+        /* Features List */
+        .features-list {
+            background: white; border-radius: 32px; padding: 24px; margin-top: 24px;
+        }
+        .features-list li {
+            padding: 10px 0; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid #eef2f6;
+        }
+        .features-list li:last-child { border-bottom: none; }
+        .features-list i { color: #10b981; font-size: 1.2rem; }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 100px; }
+            .sidebar-header h4, .user-info h6, .user-info small,
+            .sidebar-nav span, .sidebar-footer .btn span { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header"><i class="fas fa-bus fa-2x"></i><h4>SmartBus Pass</h4></div>
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name={{ current_user.full_name|urlencode }}&background=3b82f6&color=fff&size=72" alt="Profile">
+                <h6>{{ current_user.full_name }}</h6><small>{{ current_user.user_type|title }}</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                <a href="{{ url_for('apply_pass') }}" class="nav-link"><i class="fas fa-ticket-alt"></i><span>Apply for Pass</span></a>
+                <a href="{{ url_for('renew_pass_page') }}" class="nav-link"><i class="fas fa-sync-alt"></i><span>Renew Pass</span></a>
+                <a href="{{ url_for('qr_verification') }}" class="nav-link"><i class="fas fa-qrcode"></i><span>My QR Code</span></a>
+                <a href="{{ url_for('trip_history') }}" class="nav-link"><i class="fas fa-history"></i><span>Trip History</span></a>
+                <a href="{{ url_for('payment') }}" class="nav-link active"><i class="fas fa-credit-card"></i><span>Payments</span></a>
+                <a href="{{ url_for('profile') }}" class="nav-link"><i class="fas fa-user"></i><span>Profile</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light w-100"><i class="fas fa-sign-out-alt me-2"></i><span>Logout</span></a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h2><i class="fas fa-credit-card"></i> Payments</h2>
+                <div class="header-balance">
+                    <i class="fas fa-wallet me-2 text-primary"></i>Wallet Balance
+                    <span class="balance-amount">₹124.50</span>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <!-- Payment Methods -->
+                    <div class="saved-cards-section">
+                        <h5 class="fw-bold mb-4">Payment Method</h5>
+                        <div class="methods-grid">
+                            <div class="method-card-modern selected" onclick="selectMethod('card')" id="method-card">
+                                <i class="fas fa-credit-card"></i>
+                                <h6>Card</h6>
+                                <p>Visa, Mastercard</p>
+                            </div>
+                            <div class="method-card-modern" onclick="selectMethod('paypal')" id="method-paypal">
+                                <i class="fab fa-paypal"></i>
+                                <h6>PayPal</h6>
+                                <p>Fast & secure</p>
+                            </div>
+                            <div class="method-card-modern" onclick="selectMethod('wallet')" id="method-wallet">
+                                <i class="fas fa-wallet"></i>
+                                <h6>Digital Wallet</h6>
+                                <p>Google Pay, Apple Pay</p>
+                            </div>
+                            <div class="method-card-modern" onclick="selectMethod('crypto')" id="method-crypto">
+                                <i class="fab fa-bitcoin"></i>
+                                <h6>Crypto</h6>
+                                <p>BTC, ETH, USDT</p>
+                            </div>
+                        </div>
+
+                        <!-- Saved Cards -->
+                        <h6 class="fw-bold mb-3">Saved Payment Methods</h6>
+                        <div class="cards-carousel">
+                            <div class="saved-card-modern" onclick="useSavedCard('1234')">
+                                <div class="card-type"><i class="fab fa-cc-visa"></i></div>
+                                <div class="card-number">•••• •••• •••• 1234</div>
+                                <div class="card-expiry">Expires 12/25</div>
+                            </div>
+                            <div class="saved-card-modern" style="background: linear-gradient(135deg, #1e3c72, #2a5298);" onclick="useSavedCard('5678')">
+                                <div class="card-type"><i class="fab fa-cc-mastercard"></i></div>
+                                <div class="card-number">•••• •••• •••• 5678</div>
+                                <div class="card-expiry">Expires 06/24</div>
+                            </div>
+                            <div class="saved-card-modern" style="background: linear-gradient(135deg, #654ea3, #eaafc8);" onclick="useSavedCard('9012')">
+                                <div class="card-type"><i class="fab fa-cc-amex"></i></div>
+                                <div class="card-number">•••• •••• •••• 9012</div>
+                                <div class="card-expiry">Expires 09/26</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="payment-form-modern" id="paymentForm">
+                        <h5 class="fw-bold mb-4">Enter Card Details</h5>
+                        
+                        <div class="form-group">
+                            <label>Card Number</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-credit-card input-icon"></i>
+                                <input type="text" class="form-control-modern" placeholder="1234 5678 9012 3456" id="cardNumber">
+                                <div class="card-icons-preview">
+                                    <i class="fab fa-cc-visa"></i>
+                                    <i class="fab fa-cc-mastercard"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Expiry Date</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-calendar input-icon"></i>
+                                    <input type="text" class="form-control-modern" placeholder="MM/YY" id="expiry">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-lock input-icon"></i>
+                                    <input type="text" class="form-control-modern" placeholder="123" id="cvv">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cardholder Name</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input type="text" class="form-control-modern" placeholder="John Doe" id="cardName">
+                            </div>
+                        </div>
+
+                        <!-- Coupon -->
+                        <div class="coupon-modern">
+                            <input type="text" placeholder="Enter coupon code" id="coupon">
+                            <button onclick="applyCoupon()">Apply</button>
+                        </div>
+
+                        <!-- Save Card Option -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="saveCard" style="transform: scale(1.2);">
+                            <label class="form-check-label ms-2 fw-semibold" for="saveCard">
+                                Save this card for faster checkout
+                            </label>
+                        </div>
+
+                        <button class="pay-button-modern" onclick="processPayment()" id="payButton">
+                            <i class="fas fa-lock me-2"></i>Pay ₹47.25 Securely
+                        </button>
+
+                        <div class="text-center mt-3 small text-secondary">
+                            <i class="fas fa-shield-alt me-1 text-success"></i>
+                            Your payment info is encrypted and secure
+                        </div>
+                    </div>
+
+                    <!-- Transaction History -->
+                    <div class="history-modern">
+                        <h5 class="fw-bold mb-3">Recent Transactions</h5>
+                        <div class="transaction-item-modern">
+                            <div><i class="fas fa-bus me-2 text-primary"></i> Monthly Pass</div>
+                            <div class="text-end">
+                                <div class="fw-bold">₹50.00</div>
+                                <span class="transaction-status-modern status-success">Completed</span>
+                            </div>
+                        </div>
+                        <div class="transaction-item-modern">
+                            <div><i class="fas fa-bus me-2 text-primary"></i> Quarterly Pass</div>
+                            <div class="text-end">
+                                <div class="fw-bold">$135.00</div>
+                                <span class="transaction-status-modern status-success">Completed</span>
+                            </div>
+                        </div>
+                        <div class="transaction-item-modern">
+                            <div><i class="fas fa-bus me-2 text-primary"></i> Monthly Pass</div>
+                            <div class="text-end">
+                                <div class="fw-bold">$50.00</div>
+                                <span class="transaction-status-modern status-pending">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Column -->
+                <div class="col-lg-4">
+                    <div class="summary-card-modern">
+                        <h5 class="mb-4">Payment Summary</h5>
+                        
+                        <div class="summary-item">
+                            <span>Pass Type</span>
+                            <span class="summary-badge">Monthly Pass</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Base Price</span>
+                            <span>₹50.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Discount</span>
+                            <span class="text-success">-₹5.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Tax (5%)</span>
+                            <span>₹2.25</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Total</span>
+                            <span>₹47.25</span>
+                        </div>
+
+                        <hr class="bg-light opacity-25 my-4">
+                        
+                        <div class="text-center small">
+                            <i class="fas fa-bolt me-1"></i> Pass activates instantly
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="features-list">
+                        <h6 class="fw-bold mb-3">✨ Payment Features</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle"></i> 100% Secure Transactions</li>
+                            <li><i class="fas fa-check-circle"></i> Instant Pass Activation</li>
+                            <li><i class="fas fa-check-circle"></i> 24/7 Support</li>
+                            <li><i class="fas fa-check-circle"></i> Easy Refund Policy</li>
+                            <li><i class="fas fa-check-circle"></i> Loyalty Points Earned</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        let selectedMethod = 'card';
+        
+        function selectMethod(method) {
+            selectedMethod = method;
+            document.querySelectorAll('.method-card-modern').forEach(c => c.classList.remove('selected'));
+            document.getElementById(`method-${method}`).classList.add('selected');
+            
+            if (method === 'card') {
+                document.getElementById('paymentForm').style.display = 'block';
+            } else {
+                document.getElementById('paymentForm').style.display = 'none';
+                showNotification(`${method} payment coming soon!`, 'info');
+            }
+        }
+        
+        function useSavedCard(last4) {
+            showNotification(`Using card ending in ${last4}`, 'success');
+            document.getElementById('cardNumber').value = '•••• •••• •••• ' + last4;
+        }
+        
+        function applyCoupon() {
+            const coupon = document.getElementById('coupon').value;
+            if (coupon) {
+                showNotification(`Coupon ${coupon} applied! $5 discount`, 'success');
+            }
+        }
+        
+        function processPayment() {
+            const button = document.getElementById('payButton');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check me-2"></i>Payment Successful!';
+                button.style.background = '#10b981';
+                
+                showNotification('Payment successful! Pass activated.', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('dashboard') }}";
+                }, 2000);
+            }, 2000);
+        }
+        
+        function showNotification(message, type) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; top: 20px; right: 20px; background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+                color: white; padding: 12px 24px; border-radius: 60px; font-weight: 600;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; animation: slideIn 0.3s;
+            `;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Card formatting
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g,'');
+            let f = v.match(/.{1,4}/g)?.join(' ') || v;
+            e.target.value = f;
+        });
+        
+        document.getElementById('expiry').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g,'');
+            if(v.length >= 2) e.target.value = v.slice(0,2) + '/' + v.slice(2,4);
+            else e.target.value = v;
+        });
+        
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g,'').slice(0,3);
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => selectMethod('card'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - SmartBus Pass | Next-Gen Transportation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .gradient-sphere {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.4));
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: sphereMove 30s infinite;
+        }
+
+        .sphere-1 {
+            top: -200px;
+            right: -200px;
+            animation-delay: 0s;
+        }
+
+        .sphere-2 {
+            bottom: -200px;
+            left: -200px;
+            background: radial-gradient(circle at 70% 50%, rgba(236, 72, 153, 0.4), rgba(99, 102, 241, 0.4));
+            animation-delay: -15s;
+        }
+
+        @keyframes sphereMove {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(100px, -100px) scale(1.2);
+            }
+            66% {
+                transform: translate(-100px, 100px) scale(0.8);
+            }
+        }
+
+        /* Grid Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        /* Register Container */
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 50px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: cardFloat 6s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: shine 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes shine {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .progress-step {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: var(--gradient-1);
+            border-color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .progress-step.completed {
+            background: var(--success);
+            border-color: white;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            right: 25px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .progress-line-fill {
+            height: 100%;
+            background: var(--gradient-1);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Form Sections */
+        .form-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Form Title */
+        .section-title {
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .section-title h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .section-title p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 15px 20px 15px 55px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-select option {
+            background: var(--dark);
+            color: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Password Strength Meter */
+        .password-strength {
+            margin-top: 10px;
+        }
+
+        .strength-meter {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .strength-bar {
+            height: 5px;
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .strength-bar.active {
+            background: var(--gradient-1);
+        }
+
+        .strength-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        /* Terms Checkbox */
+        .terms-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 20px 0;
+        }
+
+        .terms-check input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .terms-check a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .terms-check a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .terms-check a:hover::after {
+            width: 100%;
+        }
+
+        /* Navigation Buttons */
+        .form-navigation {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .nav-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-prev {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-next, .btn-submit {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+        }
+
+        .btn-next:hover, .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Password Match Animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .password-mismatch {
+            animation: shake 0.5s ease;
+            border-color: var(--danger) !important;
+        }
+
+        /* Success Checkmark */
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            background: var(--success);
+            color: white;
+            font-size: 2.5rem;
+            animation: checkmarkPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes checkmarkPop {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 30px 20px;
+            }
+
+            .progress-step {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+
+            .progress-line {
+                top: 20px;
+            }
+        }
+
+        .login-link-wrap {
+            position: relative;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-sphere sphere-1"></div>
+        <div class="gradient-sphere sphere-2"></div>
+    </div>
+
+    <!-- Grid Overlay -->
+    <div class="grid-overlay"></div>
+
+    <!-- Register Container -->
+    <div class="register-container">
+        <div class="glass-card">
+            <!-- Logo -->
+            <div class="text-center mb-4">
+                <i class="fas fa-bus fa-3x text-white mb-3"></i>
+                <h2 class="text-white">Create Account</h2>
+                <p class="text-white-50">Join the future of transportation</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-steps">
+                    <div class="progress-step active" id="step1">1</div>
+                    <div class="progress-step" id="step2">2</div>
+                    <div class="progress-step" id="step3">3</div>
+                    <div class="progress-step" id="step4">4</div>
+                    <div class="progress-line">
+                        <div class="progress-line-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Registration Form -->
+            <form method="POST" action="{{ url_for('register') }}" id="registerForm" novalidate>
+                <!-- Section 1: Basic Info -->
+                <div class="form-section active" id="section1">
+                    <div class="section-title">
+                        <h3>Basic Information</h3>
+                        <p>Tell us a little about yourself</p>
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" class="form-control" name="full_name" placeholder="Full Name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" class="form-control" name="email" placeholder="Email Address" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <i class="fas fa-phone"></i>
+                                <input type="tel" class="form-control" name="phone" placeholder="Phone Number" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <i class="fas fa-tag"></i>
+                                <select class="form-select" name="user_type" required>
+                                    <option value="" disabled selected>Select User Type</option>
+                                    <option value="student">Student</option>
+                                    <option value="professional">Professional</option>
+                                    <option value="senior">Senior Citizen</option>
+                                    <option value="general">General</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Account Details -->
+                <div class="form-section" id="section2">
+                    <div class="section-title">
+                        <h3>Account Details</h3>
+                        <p>Create your login credentials</p>
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-user-circle"></i>
+                        <input type="text" class="form-control" name="username" placeholder="Username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                        <i class="fas fa-eye password-toggle" style="right: 20px; left: auto;" onclick="togglePassword('password')"></i>
+                    </div>
+
+                    <!-- Password Strength Meter -->
+                    <div class="password-strength">
+                        <div class="strength-meter">
+                            <div class="strength-bar" id="strength1"></div>
+                            <div class="strength-bar" id="strength2"></div>
+                            <div class="strength-bar" id="strength3"></div>
+                            <div class="strength-bar" id="strength4"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText">Enter password</div>
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                        <i class="fas fa-eye password-toggle" style="right: 20px; left: auto;" onclick="togglePassword('confirm_password')"></i>
+                    </div>
+                    <div id="passwordMatch" class="text-white-50 small mt-2"></div>
+                </div>
+
+                <!-- Section 3: Additional Info -->
+                <div class="form-section" id="section3">
+                    <div class="section-title">
+                        <h3>Additional Information</h3>
+                        <p>Help us serve you better</p>
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <textarea class="form-control" name="address" placeholder="Your Address" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" class="form-control" name="dob" placeholder="Date of Birth">
+                    </div>
+
+                    <div class="form-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" class="form-control" name="id_number" placeholder="ID Number (Optional)">
+                    </div>
+                </div>
+
+                <!-- Section 4: Terms & Submit -->
+                <div class="form-section" id="section4">
+                    <div class="text-center mb-4">
+                        <div class="checkmark">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3 class="text-white">Almost Done!</h3>
+                        <p class="text-white-50">Please review and accept terms</p>
+                    </div>
+
+                    <div class="terms-check">
+                        <input type="checkbox" id="terms" required>
+                        <label for="terms">I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Service</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a></label>
+                    </div>
+
+                    <div class="terms-check">
+                        <input type="checkbox" id="updates">
+                        <label for="updates">I want to receive updates about offers and news</label>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        By creating an account, you'll get access to exclusive benefits and discounts.
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="form-navigation">
+                    <button type="button" class="nav-btn btn-prev" id="prevBtn" onclick="changeSection(-1)" style="display: none;">
+                        <i class="fas fa-arrow-left me-2"></i>Previous
+                    </button>
+                    <button type="button" class="nav-btn btn-next" id="nextBtn" onclick="changeSection(1)">
+                        Next<i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                    <button type="submit" class="nav-btn btn-submit" id="submitBtn" style="display: none;">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </div>
+            </form>
+
+            <!-- Login Link -->
+            <div class="text-center mt-4 login-link-wrap">
+                <p class="text-white-50">Already have an account? <a href="{{ url_for('login') }}" id="signInLink" class="text-white text-decoration-none fw-bold">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Terms of Service</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Acceptance of Terms</h6>
+                    <p>By accessing and using this service, you accept and agree to be bound by the terms and provision of this agreement.</p>
+                    
+                    <h6 class="mt-3">2. User Account</h6>
+                    <p>You are responsible for maintaining the confidentiality of your account and password.</p>
+                    
+                    <h6 class="mt-3">3. Pass Usage</h6>
+                    <p>Bus passes are non-transferable and can only be used by the registered user.</p>
+                    
+                    <h6 class="mt-3">4. Payment Terms</h6>
+                    <p>All payments are processed securely. Refunds are subject to our refund policy.</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Privacy Policy</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Data Collection</h6>
+                    <p>We collect information you provide directly to us, such as when you create an account.</p>
+                    
+                    <h6 class="mt-3">Data Usage</h6>
+                    <p>We use the information to provide, maintain, and improve our services.</p>
+                    
+                    <h6 class="mt-3">Data Protection</h6>
+                    <p>We implement security measures to protect your personal information.</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <script>
+        // Multi-step Form Navigation
+        let currentSection = 1;
+        const totalSections = 4;
+
+        function changeSection(direction) {
+            const newSection = currentSection + direction;
+            
+            if (newSection >= 1 && newSection <= totalSections) {
+                // Validate current section before moving forward
+                if (direction > 0 && !validateSection(currentSection)) {
+                    return;
+                }
+
+                // Hide current section
+                document.getElementById(`section${currentSection}`).classList.remove('active');
+                
+                // Update progress step
+                document.getElementById(`step${currentSection}`).classList.add('completed');
+                
+                // Show new section
+                currentSection = newSection;
+                document.getElementById(`section${currentSection}`).classList.add('active');
+                document.getElementById(`step${currentSection}`).classList.add('active');
+                
+                // Update progress bar
+                const progress = ((currentSection - 1) / (totalSections - 1)) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                // Update navigation buttons
+                updateNavButtons();
+                
+                // Animation for new section
+                if (window.gsap) {
+                    gsap.from(`#section${currentSection}`, {
+                        x: direction > 0 ? 50 : -50,
+                        duration: 0.5
+                    });
+                }
+            }
+        }
+
+        function validateSection(section) {
+            const sectionElement = document.getElementById(`section${section}`);
+            const inputs = sectionElement.querySelectorAll('input[required], select[required]');
+            let valid = true;
+            let firstInvalidInput = null;
+
+            inputs.forEach(input => {
+                const isEmpty = !input.value;
+                const isInvalidEmail = input.type === 'email' && input.value && !input.checkValidity();
+
+                if (isEmpty || isInvalidEmail) {
+                    input.style.borderColor = '#ef4444';
+                    valid = false;
+                    if (!firstInvalidInput) firstInvalidInput = input;
+                    
+                    // Shake animation
+                    input.classList.add('password-mismatch');
+                    setTimeout(() => {
+                        input.classList.remove('password-mismatch');
+                    }, 500);
+                } else {
+                    input.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                }
+            });
+
+            // Special validation for section 2 (password match)
+            if (section === 2) {
+                const password = document.getElementById('password').value;
+                const confirm = document.getElementById('confirm_password').value;
+                
+                if (password !== confirm) {
+                    document.getElementById('confirm_password').style.borderColor = '#ef4444';
+                    document.getElementById('passwordMatch').innerHTML = '<i class="fas fa-times-circle text-danger me-2"></i>Passwords do not match';
+                    valid = false;
+                    if (!firstInvalidInput) firstInvalidInput = document.getElementById('confirm_password');
+                } else if (password && confirm) {
+                    document.getElementById('passwordMatch').innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Passwords match';
+                }
+            }
+
+            if (!valid && firstInvalidInput) {
+                firstInvalidInput.focus();
+            }
+
+            return valid;
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (currentSection === 1) {
+                prevBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'block';
+            }
+
+            if (currentSection === totalSections) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // Password Strength Checker
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strength = {
+                1: /[a-z]/,
+                2: /[A-Z]/,
+                3: /[0-9]/,
+                4: /[^a-zA-Z0-9]/
+            };
+
+            let score = 0;
+            const meters = ['strength1', 'strength2', 'strength3', 'strength4'];
+            
+            // Reset meters
+            meters.forEach(id => {
+                document.getElementById(id).classList.remove('active');
+            });
+
+            // Check each criterion
+            if (password.length >= 8) score++;
+            if (strength[1].test(password)) score++;
+            if (strength[2].test(password)) score++;
+            if (strength[3].test(password)) score++;
+            if (strength[4].test(password)) score++;
+
+            // Update meters
+            for (let i = 0; i < score; i++) {
+                document.getElementById(meters[i]).classList.add('active');
+            }
+
+            // Update text
+            const strengthText = document.getElementById('strengthText');
+            if (score === 0) strengthText.textContent = 'Enter password';
+            else if (score <= 2) strengthText.textContent = 'Weak password';
+            else if (score <= 4) strengthText.textContent = 'Medium password';
+            else strengthText.textContent = 'Strong password';
+        });
+
+        // Password Toggle
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Phone Number Formatting
+        document.querySelector('input[name="phone"]').addEventListener('input', function(e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+
+        // Form Submission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            // Re-run section validations to avoid hidden native-validation issues.
+            if (!validateSection(1)) {
+                e.preventDefault();
+                document.getElementById(`section${currentSection}`).classList.remove('active');
+                currentSection = 1;
+                document.getElementById('section1').classList.add('active');
+                updateNavButtons();
+                return;
+            }
+
+            if (!validateSection(2)) {
+                e.preventDefault();
+                document.getElementById(`section${currentSection}`).classList.remove('active');
+                currentSection = 2;
+                document.getElementById('section2').classList.add('active');
+                updateNavButtons();
+                return;
+            }
+
+            if (!document.getElementById('terms').checked) {
+                e.preventDefault();
+                alert('Please accept the Terms of Service');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Account...';
+            submitBtn.disabled = true;
+        });
+
+        // Fallback navigation for sign-in link in case any overlay/animation intercepts default anchor behavior.
+        document.getElementById('signInLink').addEventListener('click', function() {
+            window.location.href = "{{ url_for('login') }}";
+        });
+
+        // GSAP Animations (safe fallback: never hide core UI if animation library fails)
+        if (window.gsap) {
+            gsap.from('.glass-card', {
+                y: 50,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            gsap.from('.progress-step', {
+                scale: 0.9,
+                duration: 0.5,
+                stagger: 0.1,
+                delay: 0.5
+            });
+        }
+
+        // Real-time password match
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirm = this.value;
+            
+            if (confirm && password !== confirm) {
+                this.style.borderColor = '#ef4444';
+                document.getElementById('passwordMatch').innerHTML = '<i class="fas fa-times-circle text-danger me-2"></i>Passwords do not match';
+            } else if (confirm && password === confirm) {
+                this.style.borderColor = '#10b981';
+                document.getElementById('passwordMatch').innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Passwords match';
+            } else {
+                this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                document.getElementById('passwordMatch').innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>

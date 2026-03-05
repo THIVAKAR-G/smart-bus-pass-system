@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR & Digital Pass · SmartBus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f4fb; }
+        .dashboard-container { display: flex; min-height: 100vh; }
+
+        /* --- SIDEBAR (consistent) --- */
+        .sidebar {
+            width: 280px;
+            background: rgba(18, 25, 38, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.1);
+        }
+        .sidebar-header { padding: 28px 24px 16px; display: flex; align-items: center; gap: 12px; }
+        .sidebar-header i { color: #3b82f6; filter: drop-shadow(0 4px 8px rgba(59,130,246,0.3)); }
+        .sidebar-header h4 { font-weight: 600; font-size: 1.4rem; letter-spacing: -0.02em; margin: 0; color: white; }
+        .user-info { text-align: center; padding: 20px 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .user-info img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6; padding: 3px; background: white; }
+        .user-info h6 { font-weight: 600; margin: 12px 0 4px; font-size: 1.1rem; color: white; }
+        .user-info small { background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 30px; font-weight: 500; color: #ddd; }
+        .sidebar-nav { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+        .sidebar-nav .nav-link { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 14px; color: rgba(255,255,255,0.75); font-weight: 500; transition: all 0.2s; }
+        .sidebar-nav .nav-link i { width: 24px; font-size: 1.2rem; color: rgba(255,255,255,0.5); }
+        .sidebar-nav .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
+        .sidebar-nav .nav-link.active { background: #3b82f6; color: white; box-shadow: 0 8px 16px -4px rgba(59,130,246,0.4); }
+        .sidebar-nav .nav-link.active i { color: white; }
+        .sidebar-footer { padding: 20px 20px 30px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .btn-outline-light { border-radius: 40px; border-width: 1.5px; font-weight: 600; padding: 8px 0; backdrop-filter: blur(5px); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; background: #f0f4fb; overflow-y: auto; padding: 32px 40px; }
+
+        /* page header */
+        .page-header { margin-bottom: 32px; }
+        .page-header h2 { font-weight: 800; color: #0b1f3b; font-size: 2.2rem; letter-spacing: -0.02em; }
+        .page-header h2 i { color: #3b82f6; background: white; padding: 12px; border-radius: 30px; box-shadow: 0 8px 16px -8px #3b82f670; margin-right: 12px; }
+
+        /* modern pass card – realtime pass design */
+        .digital-pass-card {
+            background: linear-gradient(145deg, #ffffff, #f8fcff);
+            border-radius: 48px;
+            padding: 32px;
+            box-shadow: 0 30px 50px -20px rgba(0,40,100,0.25);
+            border: 1px solid rgba(255,255,255,0.9);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .digital-pass-card:hover { transform: translateY(-6px); }
+        .pass-glow {
+            position: absolute;
+            top: -50%;
+            left: -20%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(59,130,246,0.15), transparent 60%);
+            animation: rotateGlow 12s infinite linear;
+        }
+        @keyframes rotateGlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .pass-header-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .bus-icon-badge {
+            background: #3b82f6; color: white; padding: 12px 18px; border-radius: 50px;
+            font-weight: 700; box-shadow: 0 10px 20px -8px #2563eb;
+        }
+        .pass-type-badge {
+            background: rgba(59,130,246,0.15); color: #1f3a6b; padding: 8px 22px; border-radius: 40px;
+            font-weight: 700; backdrop-filter: blur(4px);
+        }
+
+        .qr-digital-section {
+            display: flex; gap: 30px; flex-wrap: wrap;
+        }
+        .qr-box {
+            background: white;
+            border-radius: 36px;
+            padding: 28px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02), 0 20px 30px -12px #a0c0ff;
+            border: 2px solid #eef4fe;
+            flex: 1;
+            min-width: 260px;
+            text-align: center;
+            position: relative;
+        }
+        .qr-wrapper {
+            background: linear-gradient(135deg, #f0f5ff, #ffffff);
+            padding: 15px;
+            border-radius: 30px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .qr-wrapper img {
+            width: 200px; height: 200px; border-radius: 24px;
+            transition: transform 0.3s;
+        }
+        .qr-wrapper:hover img { transform: scale(1.02); }
+        .scanning-animation {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent);
+            animation: scanLine 2.5s infinite;
+            pointer-events: none;
+            border-radius: 30px;
+        }
+        @keyframes scanLine { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(200%); } }
+
+        .pass-details-panel {
+            flex: 2;
+            min-width: 300px;
+        }
+        .info-grid {
+            display: grid; grid-template-columns: repeat(2,1fr); gap: 18px;
+            background: #f6faff; border-radius: 36px; padding: 24px;
+            margin: 16px 0;
+        }
+        .info-item { font-weight: 600; color: #1e3a6b; }
+        .info-item i { color: #3b82f6; width: 28px; }
+
+        .action-buttons {
+            display: flex; gap: 12px; flex-wrap: wrap;
+        }
+        .btn-modern {
+            border-radius: 60px; padding: 14px 28px; font-weight: 600;
+            border: none; transition: 0.15s;
+            box-shadow: 0 10px 18px -8px #1f3a6b70;
+        }
+        .btn-modern i { margin-right: 8px; }
+        .btn-download { background: #2563eb; color: white; }
+        .btn-download:hover { background: #1a4bbf; transform: scale(1.02); }
+        .btn-print { background: white; color: #1e3a6b; border: 2px solid #cddcf2; }
+        .btn-share { background: #10b981; color: white; }
+        .btn-share:hover { background: #0e9e6e; }
+
+        /* scanner / upload card */
+        .scanner-card {
+            background: white;
+            border-radius: 48px;
+            padding: 32px;
+            box-shadow: 0 25px 40px -18px #1e3a6b;
+        }
+        .camera-preview {
+            background: #1e2b3f;
+            border-radius: 36px;
+            padding: 25px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #3b82f6;
+        }
+        #cameraFeed {
+            width: 100%; max-height: 280px; border-radius: 24px;
+            object-fit: cover; display: none;
+        }
+        .camera-placeholder i { font-size: 5rem; color: #5f7daf; margin-bottom: 15px; }
+        .scan-region { width: 180px; height: 180px; border: 3px solid #3b82f6; border-radius: 30px; position: absolute; animation: pulseScan 1.8s infinite; }
+        @keyframes pulseScan { 0% { box-shadow: 0 0 0 0 #3b82f680; } 70% { box-shadow: 0 0 0 25px #3b82f600; } }
+
+        .verification-result {
+            background: white; padding: 12px 28px; border-radius: 60px;
+            font-weight: 600; margin-top: 20px; display: none;
+        }
+        .verification-result.success { background: #10b981; color: white; }
+        .verification-result.error { background: #ef4444; color: white; }
+
+        /* QR upload area */
+        .upload-area {
+            border: 3px dashed #bdd3f0; border-radius: 48px;
+            padding: 28px; text-align: center; cursor: pointer;
+            transition: 0.2s; background: #f8fdff;
+        }
+        .upload-area:hover { border-color: #3b82f6; background: #ecf3fe; }
+        .upload-area i { font-size: 2.8rem; color: #3b82f6; }
+
+        .history-tile {
+            background: #f2f9fc; border-radius: 28px; padding: 16px;
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        @media (max-width: 992px) { .sidebar { width: 100px; } .sidebar-header h4, .user-info h6, .user-info small, .sidebar-nav span, .sidebar-footer .btn span { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (identical) -->
+        <div class="sidebar">
+            <div class="sidebar-header"><i class="fas fa-bus fa-2x"></i><h4>SmartBus Pass</h4></div>
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name={{ current_user.full_name|urlencode }}&background=3b82f6&color=fff&size=72" alt="Profile">
+                <h6>{{ current_user.full_name }}</h6><small>{{ current_user.user_type|title }}</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                <a href="{{ url_for('apply_pass') }}" class="nav-link"><i class="fas fa-ticket-alt"></i><span>Apply for Pass</span></a>
+                <a href="{{ url_for('renew_pass_page') }}" class="nav-link"><i class="fas fa-sync-alt"></i><span>Renew Pass</span></a>
+                <a href="{{ url_for('qr_verification') }}" class="nav-link active"><i class="fas fa-qrcode"></i><span>My QR Code</span></a>
+                <a href="{{ url_for('trip_history') }}" class="nav-link"><i class="fas fa-history"></i><span>Trip History</span></a>
+                <a href="{{ url_for('payment') }}" class="nav-link"><i class="fas fa-credit-card"></i><span>Payments</span></a>
+                <a href="{{ url_for('profile') }}" class="nav-link"><i class="fas fa-user"></i><span>Profile</span></a>
+            </nav>
+            <div class="sidebar-footer"><a href="{{ url_for('logout') }}" class="btn btn-outline-light w-100"><i class="fas fa-sign-out-alt me-2"></i><span>Logout</span></a></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h2><i class="fas fa-qrcode"></i> Digital Pass & QR</h2>
+            </div>
+
+            {% if passes %}
+                {% for pass in passes if pass.status == 'active' %}
+                <!-- REAL-TIME PASS CARD (like a real transit pass) -->
+                <div class="digital-pass-card mb-5">
+                    <div class="pass-glow"></div>
+                    <div class="pass-header-badge">
+                        <span class="bus-icon-badge"><i class="fas fa-bus me-2"></i>SmartBus</span>
+                        <span class="pass-type-badge">{{ pass.pass_type|upper }} · ACTIVE</span>
+                    </div>
+
+                    <div class="qr-digital-section">
+                        <!-- QR with animation -->
+                        <div class="qr-box">
+                            <div class="qr-wrapper">
+                                <img id="qrImage-{{ pass.id }}" src="data:image/png;base64,{{ pass.qr_code }}" alt="QR Code">
+                                <div class="scanning-animation"></div>
+                            </div>
+                            <p class="text-muted small">scan to verify</p>
+                            <div class="action-buttons justify-content-center">
+                                <button class="btn-modern btn-download" onclick="downloadQR('{{ pass.id }}')"><i class="fas fa-download"></i>Download</button>
+                                <button class="btn-modern btn-print" onclick="printQR('{{ pass.id }}')"><i class="fas fa-print"></i>Print</button>
+                                <button class="btn-modern btn-share" onclick="shareQR('{{ pass.id }}')"><i class="fas fa-share-alt"></i>Share</button>
+                            </div>
+                        </div>
+
+                        <!-- pass details + real pass design -->
+                        <div class="pass-details-panel">
+                            <h4 style="font-weight:800;">{{ current_user.full_name }}</h4>
+                            <p class="text-secondary"><i class="fas fa-tag me-2"></i>Pass #{{ pass.id }}</p>
+                            <div class="info-grid">
+                                <div class="info-item"><i class="fas fa-route"></i> Route</div><div>{{ pass.route }}</div>
+                                <div class="info-item"><i class="fas fa-calendar-check"></i> Valid from</div><div>{{ pass.start_date.strftime('%d %b %Y') }}</div>
+                                <div class="info-item"><i class="fas fa-hourglass-end"></i> Valid until</div><div>{{ pass.end_date.strftime('%d %b %Y') }}</div>
+                                <div class="info-item"><i class="fas fa-tag"></i> Price</div><div>${{ "%.2f"|format(pass.price) }}</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-4 mt-3">
+                                <span><i class="fas fa-circle text-success me-1"></i> Active</span>
+                                <span><i class="fas fa-infinity me-1"></i> unlimited rides</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- elegant empty state -->
+                <div class="digital-pass-card text-center py-5">
+                    <i class="fas fa-qrcode fa-5x text-muted mb-4"></i>
+                    <h4>No active passes</h4>
+                    <p class="text-secondary">Apply for a pass to see your digital card & QR code</p>
+                    <a href="{{ url_for('apply_pass') }}" class="btn btn-primary btn-lg px-5 rounded-pill">Apply now</a>
+                </div>
+            {% endif %}
+
+            <!-- SCANNER + UPLOAD SECTION (modern) -->
+            <div class="row g-4">
+                <div class="col-md-7">
+                    <div class="scanner-card">
+                        <h4 class="fw-bold mb-3"><i class="fas fa-camera me-2" style="color:#2563eb;"></i> QR scanner (demo)</h4>
+                        <div class="camera-preview" id="cameraPreview">
+                            <video id="cameraFeed" class="camera-feed" autoplay playsinline muted></video>
+                            <div class="camera-placeholder">
+                                <i class="fas fa-camera"></i>
+                                <p class="text-white-50">Camera preview will appear here</p>
+                                <div class="scan-region"></div>
+                            </div>
+                            <div class="verification-result" id="verificationResult"></div>
+                        </div>
+                        <div class="d-flex gap-3 mt-4">
+                            <button class="btn btn-success rounded-pill px-4 py-2" id="startScanBtn" onclick="startScanner()"><i class="fas fa-play me-2"></i>Start camera</button>
+                            <button class="btn btn-outline-danger rounded-pill px-4 py-2" id="stopScanBtn" onclick="stopScanner()" disabled><i class="fas fa-stop me-2"></i>Stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <!-- UPLOAD QR CARD (new feature) -->
+                    <div class="scanner-card mb-4">
+                        <h4 class="fw-bold mb-3"><i class="fas fa-cloud-upload-alt me-2" style="color:#10b981;"></i> Upload QR</h4>
+                        <div class="upload-area" onclick="document.getElementById('qrUpload').click();">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p class="mt-2 fw-semibold">Click to upload QR image</p>
+                            <small class="text-secondary">PNG or JPG, max 2MB</small>
+                        </div>
+                        <input type="file" id="qrUpload" accept="image/*" style="display:none;" onchange="uploadQRCode(event)">
+                        <div id="uploadResult" class="mt-3 small fw-semibold"></div>
+                    </div>
+
+                    <!-- recent verifications -->
+                    <div class="scanner-card">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-clock me-2"></i> Recent scans</h5>
+                        <div class="history-tile mb-2">
+                            <i class="fas fa-check-circle text-success fa-lg"></i>
+                            <span><strong>Pass #1234</strong> · verified</span>
+                            <small class="ms-auto">2 min ago</small>
+                        </div>
+                        <div class="history-tile mb-2">
+                            <i class="fas fa-check-circle text-success fa-lg"></i>
+                            <span><strong>Pass #5678</strong> · verified</span>
+                            <small class="ms-auto">5 min ago</small>
+                        </div>
+                        <div class="history-tile">
+                            <i class="fas fa-times-circle text-danger fa-lg"></i>
+                            <span><strong>Pass #9012</strong> · expired</span>
+                            <small class="ms-auto">10 min ago</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- usage instructions minimal -->
+            <div class="digital-pass-card mt-4 p-4">
+                <h5><i class="fas fa-info-circle me-2 text-primary"></i> How to use</h5>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3"><i class="fas fa-qrcode me-2"></i> Show QR to conductor</div>
+                    <div class="col-md-3"><i class="fas fa-camera me-2"></i> They scan with device</div>
+                    <div class="col-md-3"><i class="fas fa-check-circle me-2 text-success"></i> Green = valid</div>
+                    <div class="col-md-3"><i class="fas fa-download me-2"></i> Download for offline</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        // download / print / share
+        function downloadQR(passId) {
+            const img = document.getElementById(`qrImage-${passId}`);
+            if (!img) return alert('QR not available');
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = `SmartBus-Pass-${passId}.png`;
+            link.click();
+        }
+        function printQR(passId) { alert('🖨️ Print dialog would open (pass #' + passId + ')'); }
+        function shareQR(passId) { alert('📤 Share options for pass #' + passId); }
+
+        // UPLOAD QR and verify (simulated)
+        function uploadQRCode(event) {
+            const file = event.target.files[0];
+            const resultDiv = document.getElementById('uploadResult');
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                resultDiv.innerHTML = '<span class="text-danger">File too large (max 2MB)</span>';
+                return;
+            }
+            resultDiv.innerHTML = '<span class="text-primary">⏳ Scanning QR from image...</span>';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width; canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, canvas.width, canvas.height);
+                    if (code) {
+                        resultDiv.innerHTML = '<span class="text-success">✅ QR detected: ' + code.data.substring(0,30) + '...</span>';
+                        simulateVerification(code.data);
+                    } else {
+                        resultDiv.innerHTML = '<span class="text-danger">❌ No valid QR code found.</span>';
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // camera scanner (modernized)
+        let cameraStream = null, scanTimer = null, detector = null, lastScanned = '', lastScannedTime = 0;
+        function showResult(type, msg) {
+            const el = document.getElementById('verificationResult');
+            el.style.display = 'block';
+            el.className = `verification-result ${type}`;
+            el.innerHTML = msg;
+        }
+        async function startScanner() {
+            const preview = document.getElementById('cameraPreview');
+            const cameraFeed = document.getElementById('cameraFeed');
+            const placeholder = preview.querySelector('.camera-placeholder');
+            if (!navigator.mediaDevices?.getUserMedia) return showResult('error', 'Camera not supported');
+            if (window.BarcodeDetector) detector = new BarcodeDetector({ formats: ['qr_code'] });
+            try {
+                stopScanner();
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                cameraFeed.srcObject = cameraStream;
+                await cameraFeed.play();
+                cameraFeed.style.display = 'block';
+                placeholder.style.display = 'none';
+                document.getElementById('startScanBtn').disabled = true;
+                document.getElementById('stopScanBtn').disabled = false;
+                showResult('success', 'Camera ready, scanning for QR...');
+                scanTimer = setInterval(scanFrame, 300);
+            } catch (err) {
+                showResult('error', 'Camera access denied');
+            }
+        }
+        async function scanFrame() {
+            const feed = document.getElementById('cameraFeed');
+            if (!cameraStream || feed.readyState < 2) return;
+            try {
+                if (detector) {
+                    const barcodes = await detector.detect(feed);
+                    const qr = barcodes.find(b => b.rawValue);
+                    if (qr) await verifyQR(qr.rawValue);
+                } else if (window.jsQR) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = feed.videoWidth; canvas.height = feed.videoHeight;
+                    canvas.getContext('2d').drawImage(feed, 0, 0);
+                    const code = jsQR(...Object.values(canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height)), { inversionAttempts: 'dontInvert' });
+                    if (code) await verifyQR(code.data);
+                }
+            } catch (e) { console.log(e); }
+        }
+        async function verifyQR(data) {
+            const now = Date.now();
+            if (data === lastScanned && now - lastScannedTime < 2500) return;
+            lastScanned = data; lastScannedTime = now;
+            showResult('success', '⏳ Verifying...');
+            try {
+                const res = await fetch('/verify-qr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ qr_data: data })
+                });
+                const json = await res.json();
+                if (res.ok && json.valid) showResult('success', `✅ Verified: ${json.user} (exp ${json.expiry})`);
+                else showResult('error', `❌ ${json.message || 'Invalid pass'}`);
+            } catch {
+                showResult('error', '❌ Verification failed');
+            }
+        }
+        function stopScanner() {
+            if (scanTimer) clearInterval(scanTimer);
+            if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+            const feed = document.getElementById('cameraFeed');
+            feed.style.display = 'none';
+            document.querySelector('.camera-placeholder').style.display = 'block';
+            document.getElementById('startScanBtn').disabled = false;
+            document.getElementById('stopScanBtn').disabled = true;
+        }
+        function simulateVerification(data) {
+            // simple mock for upload – in real app call /verify-qr
+            showResult('success', `✅ Uploaded QR looks valid (simulated)`);
+        }
+        window.addEventListener('beforeunload', stopScanner);
+    </script>
+</body>
+</html>

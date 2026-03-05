@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SmartBus Pass | Next-Gen Transportation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-shape {
+            position: absolute;
+            filter: blur(60px);
+            opacity: 0.5;
+            animation: float 20s infinite;
+        }
+
+        .shape-1 {
+            top: -100px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: var(--gradient-2);
+            border-radius: 50%;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            bottom: -150px;
+            right: -100px;
+            width: 600px;
+            height: 600px;
+            background: var(--gradient-3);
+            border-radius: 50%;
+            animation-delay: -5s;
+        }
+
+        .shape-3 {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(100px, 100px) scale(1.1);
+            }
+            50% {
+                transform: translate(0, 200px) scale(1);
+            }
+            75% {
+                transform: translate(-100px, 100px) scale(0.9);
+            }
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: particleMove 15s linear infinite;
+        }
+
+        @keyframes particleMove {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* Login Container */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            padding: 50px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            animation: cardAppear 1s ease-out;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(50px) rotateX(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        /* Logo */
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            color: white;
+            transform: rotate(10deg);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% {
+                transform: rotate(10deg) translateY(0);
+            }
+            50% {
+                transform: rotate(10deg) translateY(-10px);
+            }
+        }
+
+        .logo h2 {
+            color: white;
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .logo p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 18px 20px 18px 55px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Password Toggle */
+        .password-toggle {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Remember & Forgot */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .forgot-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+        .forgot-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .forgot-link:hover::after {
+            width: 100%;
+        }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--gradient-1);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .login-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Social Login */
+        .social-login {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .social-login p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .social-login p::before,
+        .social-login p::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .social-login p::before {
+            left: 0;
+        }
+
+        .social-login p::after {
+            right: 0;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-icon::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .social-icon:hover::before {
+            width: 100px;
+            height: 100px;
+        }
+
+        .social-icon:hover {
+            transform: translateY(-5px) rotate(360deg);
+            background: var(--gradient-1);
+        }
+
+        /* Register Link */
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .register-link a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+        .register-link a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .register-link a:hover::after {
+            width: 100%;
+        }
+
+        /* 3D Elements */
+        .floating-element {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            transform: rotate(45deg);
+            animation: float3d 10s infinite;
+        }
+
+        .elem-1 {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .elem-2 {
+            bottom: 10%;
+            right: 10%;
+            animation-delay: -3s;
+        }
+
+        @keyframes float3d {
+            0%, 100% {
+                transform: rotate(45deg) translate(0, 0) scale(1);
+            }
+            33% {
+                transform: rotate(45deg) translate(50px, 50px) scale(1.1);
+            }
+            66% {
+                transform: rotate(45deg) translate(-50px, -50px) scale(0.9);
+            }
+        }
+
+        /* Alert Messages */
+        .alert {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: white;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .alert-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-danger {
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 30px 20px;
+            }
+
+            .form-control {
+                padding: 15px 20px 15px 50px;
+            }
+
+            .floating-element {
+                display: none;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+    </div>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- 3D Floating Elements -->
+    <div class="floating-element elem-1"></div>
+    <div class="floating-element elem-2"></div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="glass-card" id="glassCard">
+            <!-- Logo -->
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bus"></i>
+                </div>
+                <h2>Welcome Back!</h2>
+                <p>Sign in to continue your journey</p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Login Form -->
+            <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+                <div class="form-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
+                </div>
+
+                <div class="form-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                    <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span>Sign In</span>
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </form>
+
+            <!-- Social Login -->
+            <div class="social-login">
+                <p>Or continue with</p>
+                <div class="social-icons">
+                    <div class="social-icon" onclick="socialLogin('google')">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <div class="social-icon" onclick="socialLogin('facebook')">
+                        <i class="fab fa-facebook-f"></i>
+                    </div>
+                    <div class="social-icon" onclick="socialLogin('apple')">
+                        <i class="fab fa-apple"></i>
+                    </div>
+                    <div class="social-icon" onclick="socialLogin('twitter')">
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register Link -->
+            <div class="register-link">
+                Don't have an account? <a href="{{ url_for('register') }}">Sign up now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        // Particles Generation
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random position
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = 15 + Math.random() * 10 + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // Password Toggle
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Form Submission with Loading Effect
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            btn.innerHTML = '<span class="loading"></span> Signing in...';
+            btn.disabled = true;
+        });
+
+        // 3D Card Effect
+        const card = document.getElementById('glassCard');
+        
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        // Reset on mouse leave
+        document.addEventListener('mouseleave', () => {
+            card.style.transform = 'rotateY(0deg) rotateX(0deg)';
+        });
+
+        // Social Login Simulation
+        function socialLogin(provider) {
+            const btn = document.querySelector(`.social-icon:has(.fa-${provider})`);
+            btn.innerHTML = '<span class="loading"></span>';
+            
+            setTimeout(() => {
+                alert(`${provider} login coming soon!`);
+                btn.innerHTML = `<i class="fab fa-${provider}"></i>`;
+            }, 1500);
+        }
+
+        // Floating Labels Animation
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('i:first-child').style.color = 'white';
+            });
+            
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('i:first-child').style.color = 'rgba(255, 255, 255, 0.8)';
+            });
+        });
+
+        // GSAP Animations (safe fallback: never hide core UI if animation library fails)
+        if (window.gsap) {
+            gsap.from('.glass-card', {
+                y: 100,
+                duration: 1,
+                ease: 'power3.out'
+            });
+
+            gsap.from('.form-group', {
+                y: 50,
+                duration: 0.8,
+                stagger: 0.2,
+                delay: 0.5
+            });
+
+            gsap.from('.login-btn', {
+                scale: 0.9,
+                duration: 0.5,
+                delay: 1.2,
+                ease: 'back.out(1.7)'
+            });
+        }
+
+        // Auto-fill detection animation
+        const checkAutoFill = setInterval(() => {
+            document.querySelectorAll('.form-control').forEach(input => {
+                if (input.value) {
+                    input.style.background = 'rgba(255, 255, 255, 0.2)';
+                }
+            });
+        }, 500);
+
+        // Clear interval after 5 seconds
+        setTimeout(() => clearInterval(checkAutoFill), 5000);
+    </script>
+</body>
+</html>
