@@ -1,0 +1,61 @@
+{% extends "admin/base.html" %}
+{% block title %}Export Pass PDF{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="data-table">
+            <div class="table-header">
+                <h5><i class="fas fa-file-export me-2"></i>Export Pass Details to Email</h5>
+            </div>
+            <form method="POST" class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Recipient Email</label>
+                    <input type="email" name="recipient_email" value="{{ recipient_email }}" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Status Filter</label>
+                    <select name="status" class="form-select">
+                        <option value="" {% if not status_filter %}selected{% endif %}>All</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Route Filter</label>
+                    <input type="text" name="route" class="form-control" list="routeOptions" value="{{ route_filter }}" placeholder="Enter route name">
+                    <datalist id="routeOptions">
+                        {% for r in distinct_routes %}
+                        <option value="{{ r }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-12 d-flex gap-2 pt-2">
+                    <button class="btn btn-primary px-4" type="submit">
+                        <i class="fas fa-paper-plane me-2"></i>Generate PDF & Send
+                    </button>
+                    <a href="{{ url_for('admin_export_passes') }}" class="btn btn-light px-4">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="stats-card">
+            <div class="stats-icon" style="background:#e8f0ff;color:#204f9e;">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="stats-value">{{ total_records }}</div>
+            <div class="stats-label">Records in Current Filter</div>
+        </div>
+        <div class="stats-card mt-4">
+            <div class="stats-icon" style="background:#e9fff5;color:#127b54;">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <div class="stats-label" style="text-transform:none;letter-spacing:0;color:#4a5f7c;">
+                Company-style email template with branded header and attached modern PDF layout.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

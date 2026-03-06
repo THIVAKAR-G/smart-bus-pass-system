@@ -221,19 +221,42 @@
                     <div class="stat-label">Total Trips</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="stat-value">${{ "%.2f"|format(total_spent) }}</div>
+                    <div class="stat-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+                    <div class="stat-value">₹{{ "%.2f"|format(total_spent) }}</div>
                     <div class="stat-label">Total Spent</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="stat-value">${{ "%.2f"|format(avg_fare) }}</div>
+                    <div class="stat-value">₹{{ "%.2f"|format(avg_fare) }}</div>
                     <div class="stat-label">Avg. Fare</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-calendar"></i></div>
-                    <div class="stat-value">{{ years|length }}</div>
-                    <div class="stat-label">Active Years</div>
+                    <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="stat-value">{{ active_pass_count }}</div>
+                    <div class="stat-label">Active Passes</div>
+                </div>
+            </div>
+
+            <div class="stats-grid mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-value">₹{{ "%.2f"|format(active_pass_total_amount) }}</div>
+                    <div class="stat-label">Active Pass Amount</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+                    <div class="stat-value">{{ pass_status_counts.active or 0 }}</div>
+                    <div class="stat-label">Active Status</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-hourglass-end"></i></div>
+                    <div class="stat-value">{{ pass_status_counts.expired or 0 }}</div>
+                    <div class="stat-label">Expired Status</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-ban"></i></div>
+                    <div class="stat-value">{{ pass_status_counts.cancelled or 0 }}</div>
+                    <div class="stat-label">Cancelled Status</div>
                 </div>
             </div>
 
@@ -269,9 +292,9 @@
                 <div class="chart-header">
                     <h5 class="fw-bold mb-0">Trip Analytics</h5>
                     <div class="chart-period">
-                        <button class="period-btn active" onclick="updateChart('week')">Week</button>
-                        <button class="period-btn" onclick="updateChart('month')">Month</button>
-                        <button class="period-btn" onclick="updateChart('year')">Year</button>
+                        <button class="period-btn active" onclick="updateChart('week', this)">Week</button>
+                        <button class="period-btn" onclick="updateChart('month', this)">Month</button>
+                        <button class="period-btn" onclick="updateChart('year', this)">Year</button>
                     </div>
                 </div>
                 <canvas id="tripChart" style="width:100%; max-height:300px;"></canvas>
@@ -303,7 +326,7 @@
                                 <td><span class="trip-route">{{ trip.route }}</span></td>
                                 <td>{{ trip.boarding_point }}</td>
                                 <td>{{ trip.drop_point }}</td>
-                                <td><span class="fare-badge">${{ "%.2f"|format(trip.fare) }}</span></td>
+                                <td><span class="fare-badge">₹{{ "%.2f"|format(trip.fare) }}</span></td>
                                 <td><span class="badge bg-success">Completed</span></td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-secondary rounded-circle me-1" onclick="viewTripDetails('{{ trip.id }}')">
@@ -371,7 +394,7 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Fare ($)</label>
+                            <label class="form-label fw-semibold">Fare (₹)</label>
                             <input type="number" step="0.01" class="form-control" id="fare" required>
                         </div>
                     </form>
@@ -390,13 +413,14 @@
 
         // Initialize chart
         document.addEventListener('DOMContentLoaded', function() {
-            updateChart('week');
+            const defaultBtn = document.querySelector('.period-btn.active') || document.querySelector('.period-btn');
+            updateChart('week', defaultBtn);
         });
 
-        function updateChart(period) {
+        function updateChart(period, clickedBtn) {
             // Update active button
             document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
-            event?.target.classList.add('active');
+            if (clickedBtn) clickedBtn.classList.add('active');
 
             fetch(`/api/trips/stats?period=${period}`)
                 .then(res => res.json())
@@ -406,28 +430,52 @@
                     if (chart) chart.destroy();
 
                     chart = new Chart(ctx, {
-                        type: 'line',
+                        type: 'bar',
                         data: {
-                            labels: Object.keys(data),
-                            datasets: [{
-                                label: 'Number of Trips',
-                                data: Object.values(data),
-                                borderColor: '#3b82f6',
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            }]
+                            labels: data.labels || [],
+                            datasets: [
+                                {
+                                    type: 'line',
+                                    label: 'Number of Trips',
+                                    data: data.trip_counts || [],
+                                    borderColor: '#2563eb',
+                                    backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                                    borderWidth: 3,
+                                    tension: 0.35,
+                                    fill: true,
+                                    yAxisID: 'yTrips'
+                                },
+                                {
+                                    label: 'Fare Total (₹)',
+                                    data: data.fare_totals || [],
+                                    backgroundColor: 'rgba(16, 185, 129, 0.45)',
+                                    borderColor: '#10b981',
+                                    borderWidth: 1.5,
+                                    borderRadius: 10,
+                                    yAxisID: 'yFare'
+                                }
+                            ]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { display: false }
+                                legend: { display: true }
                             },
                             scales: {
-                                y: {
+                                yTrips: {
+                                    type: 'linear',
                                     beginAtZero: true,
+                                    position: 'left',
+                                    title: { display: true, text: 'Trips' },
                                     grid: { display: false }
+                                },
+                                yFare: {
+                                    type: 'linear',
+                                    beginAtZero: true,
+                                    position: 'right',
+                                    title: { display: true, text: 'Fare (₹)' },
+                                    grid: { drawOnChartArea: false }
                                 },
                                 x: {
                                     grid: { display: false }
@@ -471,7 +519,10 @@
         }
 
         function exportTrips() {
-            window.location.href = "{{ url_for('trip_history') }}?export=csv";
+            const params = new URLSearchParams(window.location.search);
+            params.set('export', 'csv');
+            params.delete('page');
+            window.location.href = `{{ url_for('trip_history') }}?${params.toString()}`;
         }
     </script>
 </body>

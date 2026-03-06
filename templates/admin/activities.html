@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% block title %}Activity Logs{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="data-table">
+            <div class="table-header"><h5>Recent Users</h5></div>
+            {% for u in recent_users %}
+                <p class="mb-2"><strong>{{ u.full_name }}</strong> <small class="text-muted">{{ u.created_at.strftime('%d %b %Y') }}</small></p>
+            {% else %}
+                <p>No recent users.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="data-table">
+            <div class="table-header"><h5>Recent Passes</h5></div>
+            {% for p in recent_passes %}
+                <p class="mb-2"><strong>#{{ p.id }}</strong> {{ p.route }} <small class="text-muted">{{ p.created_at.strftime('%d %b %Y') }}</small></p>
+            {% else %}
+                <p>No recent passes.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="data-table">
+            <div class="table-header"><h5>Recent Trips</h5></div>
+            {% for t in recent_trips %}
+                <p class="mb-2"><strong>{{ t.user.full_name }}</strong> - {{ t.route }} <small class="text-muted">{{ t.timestamp.strftime('%d %b %Y') }}</small></p>
+            {% else %}
+                <p>No recent trips.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

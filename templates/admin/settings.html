@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="data-table" style="max-width:700px;">
+    <div class="table-header"><h5>Admin Settings</h5></div>
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">Admin Display Name</label>
+            <input type="text" class="form-control" name="admin_name" value="{{ admin_name }}" required>
+        </div>
+        <button class="btn btn-primary">Save</button>
+    </form>
+</div>
+{% endblock %}

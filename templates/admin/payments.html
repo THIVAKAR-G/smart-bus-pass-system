@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% block title %}Payments{% endblock %}
+{% block content %}
+<div class="data-table">
+    <div class="table-header"><h5>Payment Records</h5></div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>ID</th><th>User</th><th>Amount</th><th>Method</th><th>Status</th><th>Transaction</th><th>Time</th></tr></thead>
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.user.full_name }}</td>
+                    <td>INR {{ "%.2f"|format(p.amount) }}</td>
+                    <td>{{ p.payment_method|title }}</td>
+                    <td>{{ p.status|title }}</td>
+                    <td>{{ p.transaction_id or "-" }}</td>
+                    <td>{{ p.timestamp.strftime('%d %b %Y %I:%M %p') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">No payments yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

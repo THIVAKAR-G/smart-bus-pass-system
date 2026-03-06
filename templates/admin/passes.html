@@ -1,0 +1,264 @@
+{% extends "admin/base.html" %}
+{% block title %}Bus Passes{% endblock %}
+{% block content %}
+<div class="data-table">
+    <div class="table-header">
+        <h5>Pass Details</h5>
+        <form method="GET" class="d-flex gap-2">
+            <input class="form-control" name="q" value="{{ search }}" placeholder="Search by route, user or pass ID">
+            <select class="form-select" name="status">
+                <option value="">All Status</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                <option value="expired" {% if selected_status == 'expired' %}selected{% endif %}>Expired</option>
+                <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+            <button class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Pass ID</th><th>User</th><th>Route</th><th>Type</th><th>Status</th><th>Price</th><th>Start</th><th>End</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for p in passes %}
+                <tr>
+                    <td>#{{ p.id }}</td>
+                    <td>{{ p.user.full_name }}</td>
+                    <td>{{ p.route }}</td>
+                    <td>{{ p.pass_type|title }}</td>
+                    <td>
+                        <span class="badge-status {% if p.status == 'active' %}badge-active{% elif p.status == 'expired' %}badge-expired{% else %}badge-pending{% endif %}">
+                            {{ p.status|title }}
+                        </span>
+                    </td>
+                    <td>INR {{ "%.2f"|format(p.price) }}</td>
+                    <td>{{ p.start_date.strftime('%d %b %Y') }}</td>
+                    <td>{{ p.end_date.strftime('%d %b %Y') }}</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill" onclick="previewPassJPG('{{ p.id }}')">
+                            <i class="fas fa-eye me-1"></i>Preview
+                        </button>
+                        {% if p.qr_code %}
+                        <img id="passQR-{{ p.id }}" src="data:image/png;base64,{{ p.qr_code }}" alt="QR" class="d-none">
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9">No passes found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="passPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 24px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Pass Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <img id="passPreviewImage" alt="Pass Preview" style="width:100%; border-radius:16px; border:1px solid #dbe8ff;">
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="downloadPreviewPassJPG()">
+                    <i class="fas fa-image me-2"></i>Download JPG
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const adminPassData = {
+    {% for p in passes %}
+    "{{ p.id }}": {
+        id: "{{ p.id }}",
+        user: {{ p.user.full_name|tojson }},
+        passType: {{ (p.pass_type|upper)|tojson }},
+        route: {{ p.route|tojson }},
+        from: {{ (p.route.split(' - ')[0] if ' - ' in p.route else p.route)|tojson }},
+        to: {{ (p.route.split(' - ')[1] if ' - ' in p.route else 'N/A')|tojson }},
+        validFrom: "{{ p.start_date.strftime('%d %b %Y') }}",
+        validUntil: "{{ p.end_date.strftime('%d %b %Y') }}",
+        status: {{ p.status|tojson }},
+        amount: "INR {{ '%.2f'|format(p.price) }}"
+    },
+    {% endfor %}
+};
+
+let adminPreviewPassId = null;
+let adminPreviewDataUrl = '';
+
+function wrapText(ctx, text, maxWidth) {
+    const words = String(text).split(' ');
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width <= maxWidth) {
+            line = test;
+        } else {
+            if (line) lines.push(line);
+            line = word;
+        }
+    }
+    if (line) lines.push(line);
+    return lines;
+}
+
+function buildAdminPassCanvas(passId) {
+    const pass = adminPassData[String(passId)];
+    const qrImage = document.getElementById(`passQR-${passId}`);
+    if (!pass) return null;
+
+    const signatures = ['A. Kumar', 'R. Sharma', 'S. Narayanan', 'M. Iqbal', 'P. Verma'];
+    const signer = signatures[Math.floor(Math.random() * signatures.length)];
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1240;
+    canvas.height = 1754;
+    const ctx = canvas.getContext('2d');
+
+    const roundRect = (x, y, w, h, r) => {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    };
+
+    ctx.fillStyle = '#f3f8ff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#dfeaff';
+    ctx.beginPath(); ctx.arc(120, 120, 180, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d8f5ed';
+    ctx.beginPath(); ctx.arc(1140, 1660, 210, 0, Math.PI * 2); ctx.fill();
+
+    roundRect(80, 80, 1080, 150, 36);
+    ctx.fillStyle = '#122a4c';
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 56px Inter, Arial';
+    ctx.fillText('SMARTBUS OFFICIAL TRAVEL PASS', 120, 175);
+    ctx.fillStyle = '#c3d9ff';
+    ctx.font = '600 30px Inter, Arial';
+    ctx.fillText(`Pass #${pass.id}  -  ${pass.passType}  -  ${String(pass.status).toUpperCase()}`, 120, 225);
+
+    roundRect(80, 285, 1080, 1380, 34);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#bcd2f5';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#153057';
+    ctx.font = '700 42px Inter, Arial';
+    ctx.fillText('Passenger Details', 130, 390);
+
+    const labelColor = '#526a90';
+    const valueColor = '#0f2648';
+    const leftX = 130;
+    const valueX = 370;
+    const valueMaxWidth = 450;
+    const valueLineHeight = 34;
+    let y = 455;
+    const drawRow = (label, value) => {
+        ctx.fillStyle = labelColor;
+        ctx.font = '600 26px Inter, Arial';
+        ctx.fillText(label, leftX, y);
+        ctx.fillStyle = valueColor;
+        ctx.font = '700 28px Inter, Arial';
+        const lines = wrapText(ctx, value, valueMaxWidth);
+        lines.forEach((line, idx) => ctx.fillText(line, valueX, y + idx * valueLineHeight));
+        y += Math.max(78, lines.length * valueLineHeight + 24);
+    };
+
+    drawRow('Passenger Name', pass.user);
+    drawRow('Pass Type', pass.passType);
+    drawRow('Valid From', pass.validFrom);
+    drawRow('Valid Until', pass.validUntil);
+    drawRow('Boarding Point', pass.from);
+    drawRow('Destination', pass.to);
+    drawRow('Route', pass.route);
+    drawRow('Amount Paid', pass.amount);
+
+    roundRect(860, 370, 240, 240, 24);
+    ctx.fillStyle = '#f5faff';
+    ctx.fill();
+    ctx.strokeStyle = '#d3e1f5';
+    ctx.stroke();
+    if (qrImage && qrImage.src) {
+        ctx.drawImage(qrImage, 880, 390, 200, 200);
+    }
+    ctx.fillStyle = '#546c92';
+    ctx.font = '600 19px Inter, Arial';
+    ctx.fillText('Scan to verify pass', 880, 630);
+
+    const separatorY = Math.max(1180, y + 38);
+    ctx.strokeStyle = '#e0ebfc';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(130, separatorY);
+    ctx.lineTo(1110, separatorY);
+    ctx.stroke();
+
+    const signatureTitleY = separatorY + 78;
+    const signatureLineY = signatureTitleY + 20;
+    ctx.fillStyle = '#143057';
+    ctx.font = '700 30px Inter, Arial';
+    ctx.fillText('Authority Signature', 130, signatureTitleY);
+    ctx.strokeStyle = '#88a3cc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(130, signatureLineY);
+    ctx.lineTo(420, signatureLineY);
+    ctx.stroke();
+    ctx.fillStyle = '#1e4f93';
+    ctx.font = 'italic 48px "Brush Script MT", "Segoe Script", cursive';
+    ctx.fillText(signer, 150, signatureLineY + 14);
+    ctx.fillStyle = '#607697';
+    ctx.font = '600 20px Inter, Arial';
+    ctx.fillText('SmartBus Transit Operations', 130, signatureLineY + 70);
+
+    roundRect(860, 1500, 250, 110, 20);
+    ctx.fillStyle = '#122a4c';
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.font = '700 24px Inter, Arial';
+    ctx.fillText('SMARTBUS', 985, 1555);
+    ctx.font = '500 20px Inter, Arial';
+    ctx.fillText('ORIGINAL PASS', 985, 1590);
+    ctx.textAlign = 'start';
+
+    return canvas;
+}
+
+function previewPassJPG(passId) {
+    const canvas = buildAdminPassCanvas(passId);
+    if (!canvas) return;
+    adminPreviewPassId = passId;
+    adminPreviewDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+    document.getElementById('passPreviewImage').src = adminPreviewDataUrl;
+    new bootstrap.Modal(document.getElementById('passPreviewModal')).show();
+}
+
+function downloadPreviewPassJPG() {
+    if (!adminPreviewDataUrl || !adminPreviewPassId) return;
+    const link = document.createElement('a');
+    link.href = adminPreviewDataUrl;
+    link.download = `SmartBus-Admin-Pass-${adminPreviewPassId}.jpg`;
+    link.click();
+}
+</script>
+{% endblock %}

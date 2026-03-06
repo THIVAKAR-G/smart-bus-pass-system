@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% block title %}Route Analytics{% endblock %}
+{% block content %}
+<div class="data-table">
+    <div class="table-header"><h5>Total Pass Booked Per Route</h5></div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Route</th><th>Total Booked</th><th>Total Revenue</th></tr></thead>
+            <tbody>
+                {% for row in route_stats %}
+                <tr>
+                    <td>{{ row.route }}</td>
+                    <td>{{ row.booked }}</td>
+                    <td>INR {{ "%.2f"|format(row.revenue or 0) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">No route analytics available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

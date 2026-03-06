@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>SmartBus Admin - {% block title %}Dashboard{% endblock %}</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Three.js Canvas Container */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-sidebar {
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Admin Wrapper */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Enhanced Sidebar */
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 20px 0 30px -15px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .sidebar-header {
+            padding: 30px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.2) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar-header p {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Enhanced Profile Section */
+        .admin-profile {
+            padding: 25px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .profile-img-3d {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            transform: rotate(10deg) perspective(500px) rotateY(20deg);
+            transition: all 0.5s ease;
+            box-shadow: 0 20px 30px -10px rgba(102, 126, 234, 0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .profile-img-3d:hover {
+            transform: rotate(0deg) perspective(500px) rotateY(0deg);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(10deg) perspective(500px) rotateY(20deg) translateY(0); }
+            50% { transform: rotate(10deg) perspective(500px) rotateY(20deg) translateY(-10px); }
+        }
+
+        .profile-info h6 {
+            margin: 0;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .profile-info small {
+            color: rgba(255, 255, 255, 0.6);
+            display: block;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* Enhanced Navigation */
+        .sidebar-nav {
+            padding: 25px 16px;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .nav-section:nth-child(1) { animation-delay: 0.1s; }
+        .nav-section:nth-child(2) { animation-delay: 0.2s; }
+        .nav-section:nth-child(3) { animation-delay: 0.3s; }
+        .nav-section:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .nav-section-title {
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .sidebar-nav .nav-link:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .sidebar-nav .nav-link i {
+            width: 24px;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-nav .nav-link:hover i {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .sidebar-nav .nav-link span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            color: white;
+        }
+
+        .sidebar-nav .nav-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Main Content Area */
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 25px 30px;
+            transition: all 0.3s;
+        }
+
+        /* Enhanced Navbar */
+        .admin-navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .navbar-search {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 15px;
+            padding: 10px 20px;
+            width: 350px;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-search:focus-within {
+            background: white;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .navbar-search i {
+            color: #667eea;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        .navbar-search input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        .navbar-search input::placeholder {
+            color: #999;
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notification-badge i {
+            font-size: 1.4rem;
+            color: #4a5568;
+            transition: transform 0.3s;
+        }
+
+        .notification-badge:hover i {
+            transform: scale(1.1) rotate(10deg);
+            color: #667eea;
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Enhanced Cards */
+        .stats-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 40px -20px rgba(102, 126, 234, 0.4);
+        }
+
+        .stats-card:hover::before {
+            transform: rotate(45deg) scale(1.5);
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            position: relative;
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .stats-icon i {
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+        }
+
+        .stats-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 10px 0 5px;
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-label {
+            color: #718096;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Enhanced Tables */
+        .data-table {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .table-header h5 {
+            margin: 0;
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 1.3rem;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            border-top: none;
+            background: rgba(102, 126, 234, 0.05);
+            padding: 15px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            color: #2d3748;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.02);
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        /* Enhanced Badges */
+        .badge-status {
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            display: inline-block;
+            animation: badgePulse 2s infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .badge-active { 
+            background: linear-gradient(135deg, #84fab0, #8fd3f4);
+            color: #1e4620;
+            box-shadow: 0 3px 10px rgba(132, 250, 176, 0.3);
+        }
+        
+        .badge-expired { 
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: #7f1d1d;
+            box-shadow: 0 3px 10px rgba(240, 147, 251, 0.3);
+        }
+        
+        .badge-pending { 
+            background: linear-gradient(135deg, #ffd3a5, #fd9e8a);
+            color: #7f4d1d;
+            box-shadow: 0 3px 10px rgba(255, 211, 165, 0.3);
+        }
+        
+        .badge-completed { 
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            color: #1e3a8a;
+            box-shadow: 0 3px 10px rgba(161, 196, 253, 0.3);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 0 3px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+        }
+
+        .action-btn:hover::before {
+            width: 100px;
+            height: 100px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px) rotate(5deg);
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
+        }
+
+        .btn-view { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-edit { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
+        .btn-delete { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                left: -280px;
+            }
+            .admin-sidebar.mobile-active {
+                left: 0;
+            }
+            .admin-content {
+                margin-left: 0;
+            }
+            .navbar-search {
+                width: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-content {
+                padding: 20px 15px;
+            }
+            .stats-card {
+                margin-bottom: 15px;
+            }
+            .table-responsive {
+                border-radius: 15px;
+            }
+            .navbar-search {
+                width: 200px;
+            }
+            .stats-value {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .admin-navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .navbar-search {
+                width: 100%;
+            }
+            .navbar-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .stats-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner-3d {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin3D 2s infinite linear;
+        }
+
+        .loading-spinner-3d div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            border-top-color: #667eea;
+            border-right-color: #764ba2;
+            border-bottom-color: #f093fb;
+            border-left-color: #f5576c;
+            border-radius: 50%;
+            animation: spin 1.5s infinite ease-in-out;
+        }
+
+        @keyframes spin3D {
+            from { transform: rotateX(0deg) rotateY(0deg); }
+            to { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        /* Floating Animation for Cards */
+        .floating-card {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Glow Effect */
+        .glow-effect {
+            position: relative;
+        }
+
+        .glow-effect::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            border-radius: inherit;
+            z-index: -1;
+            animation: glow 3s ease-in-out infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .glow-effect:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: blur(10px); }
+            50% { filter: blur(15px); }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Three.js Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <div class="admin-wrapper">
+        <!-- Sidebar with mobile toggle -->
+        <div class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <h3>SmartBus</h3>
+                <p>Administration</p>
+            </div>
+
+            <div class="admin-profile">
+                <div class="profile-img-3d">
+                    {{ admin_initials[:1] }}
+                </div>
+                <div class="profile-info">
+                    <h6>{{ admin_name }}</h6>
+                    <small><i class="fas fa-shield-alt me-1"></i> Super Admin</small>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">MAIN</div>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">MANAGEMENT</div>
+                    <a href="{{ url_for('admin_users') }}" class="nav-link {% if request.endpoint == 'admin_users' or request.endpoint == 'admin_user_detail' %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>Users</span>
+                        <span class="badge bg-primary ms-auto">{{ total_users if total_users else 0 }}</span>
+                    </a>
+                    <a href="{{ url_for('admin_passes') }}" class="nav-link {% if request.endpoint == 'admin_passes' or request.endpoint == 'admin_pass_detail' %}active{% endif %}">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Bus Passes</span>
+                        <span class="badge bg-success ms-auto">{{ total_passes if total_passes else 0 }}</span>
+                    </a>
+                    <a href="{{ url_for('admin_trips') }}" class="nav-link {% if request.endpoint == 'admin_trips' %}active{% endif %}">
+                        <i class="fas fa-bus"></i>
+                        <span>Trip History</span>
+                    </a>
+                    <a href="{{ url_for('admin_payments') }}" class="nav-link {% if request.endpoint == 'admin_payments' %}active{% endif %}">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Payments</span>
+                        <span class="badge bg-warning ms-auto">${{ total_revenue if total_revenue else 0 }}</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ANALYTICS</div>
+                    <a href="{{ url_for('admin_route_stats') }}" class="nav-link {% if request.endpoint == 'admin_route_stats' %}active{% endif %}">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Route Analytics</span>
+                    </a>
+                    <a href="{{ url_for('admin_export_passes') }}" class="nav-link {% if request.endpoint == 'admin_export_passes' %}active{% endif %}">
+                        <i class="fas fa-file-export"></i>
+                        <span>Export Pass PDF</span>
+                    </a>
+                    <a href="{{ url_for('admin_reports') }}" class="nav-link {% if request.endpoint == 'admin_reports' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Reports</span>
+                    </a>
+                    <a href="{{ url_for('admin_activities') }}" class="nav-link {% if request.endpoint == 'admin_activities' %}active{% endif %}">
+                        <i class="fas fa-history"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">SYSTEM</div>
+                    <a href="{{ url_for('admin_settings') }}" class="nav-link {% if request.endpoint == 'admin_settings' %}active{% endif %}">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="nav-link">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>User Panel</span>
+                    </a>
+                    <a href="{{ url_for('admin_logout') }}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer text-center py-3">
+                <small class="text-white-50">v2.0.0 • SmartBus Admin</small>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-content">
+            <!-- Top Navbar -->
+            <div class="admin-navbar">
+                <button class="btn btn-link d-lg-none" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div class="navbar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="globalSearch" placeholder="Search users, passes, transactions...">
+                </div>
+
+                <div class="navbar-right">
+                    <div class="notification-badge" onclick="showNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge-count" id="notificationCount">0</span>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-link text-dark" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-language"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="changeLanguage('en')">English</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeLanguage('es')">Español</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeLanguage('fr')">Français</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="btn btn-link text-dark" type="button" data-bs-toggle="dropdown">
+                            <div class="admin-avatar">
+                                {{ admin_initials }}
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">{{ admin_name }}</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}"><i class="fas fa-user-cog me-2"></i>Admin Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('admin_logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show glass-card" role="alert">
+                                <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="spinner-overlay" id="loadingSpinner">
+        <div class="loading-spinner-3d">
+            <div></div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="btn btn-primary d-lg-none mobile-menu-btn" onclick="toggleSidebar()" style="position: fixed; bottom: 20px; right: 20px; z-index: 999; border-radius: 50%; width: 60px; height: 60px;">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Three.js Animation
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Create floating particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1000;
+            const posArray = new Float32Array(particlesCount * 3);
+
+            for(let i = 0; i < particlesCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 50;
+                posArray[i+1] = (Math.random() - 0.5) * 50;
+                posArray[i+2] = (Math.random() - 0.5) * 50;
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+            // Create material
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                color: 0x667eea,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            // Create mesh
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+
+            // Add floating cubes
+            const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x764ba2, wireframe: true, transparent: true, opacity: 0.2 });
+            const cubes = [];
+
+            for(let i = 0; i < 20; i++) {
+                const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+                cube.position.x = (Math.random() - 0.5) * 30;
+                cube.position.y = (Math.random() - 0.5) * 30;
+                cube.position.z = (Math.random() - 0.5) * 30;
+                cube.rotation.x = Math.random() * Math.PI;
+                cube.rotation.y = Math.random() * Math.PI;
+                scene.add(cube);
+                cubes.push(cube);
+            }
+
+            camera.position.z = 20;
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Rotate particles
+                particlesMesh.rotation.x += 0.0001;
+                particlesMesh.rotation.y += 0.0002;
+
+                // Animate cubes
+                cubes.forEach((cube, index) => {
+                    cube.rotation.x += 0.01;
+                    cube.rotation.y += 0.01;
+                    cube.position.y += Math.sin(Date.now() * 0.001 + index) * 0.01;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize Three.js when page loads
+        window.addEventListener('load', initThree);
+
+        // Sidebar toggle for mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            sidebar.classList.toggle('mobile-active');
+        }
+
+        // Global search with debounce
+        let searchTimeout;
+        document.getElementById('globalSearch')?.addEventListener('keyup', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = this.value;
+                if(searchTerm.length > 2) {
+                    performGlobalSearch(searchTerm);
+                }
+            }, 500);
+        });
+
+        async function performGlobalSearch(term) {
+            showLoading();
+            try {
+                const response = await fetch(`/admin/search?q=${encodeURIComponent(term)}`);
+                const data = await response.json();
+                displaySearchResults(data);
+            } catch(error) {
+                console.error('Search error:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displaySearchResults(results) {
+            // Implement search results display
+            console.log('Search results:', results);
+        }
+
+        // Notification system
+        async function fetchNotifications() {
+            try {
+                const response = await fetch('/admin/notifications');
+                const data = await response.json();
+                updateNotificationBadge(data.count);
+            } catch(error) {
+                console.error('Error fetching notifications:', error);
+            }
+        }
+
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notificationCount');
+            if(badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+
+        function showNotifications() {
+            // Implement notifications dropdown
+            console.log('Show notifications');
+        }
+
+        // Language change
+        function changeLanguage(lang) {
+            fetch(`/api/translations/${lang}`)
+                .then(response => response.json())
+                .then(translations => {
+                    // Update UI with translations
+                    console.log('Language changed to:', lang, translations);
+                });
+        }
+
+        // Show/hide loading
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Format helpers
+        function formatDate(date) {
+            return new Date(date).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Fetch initial notifications
+            fetchNotifications();
+            
+            // Auto refresh notifications every 30 seconds
+            setInterval(fetchNotifications, 30000);
+        });
+
+        // Chart color presets
+        const chartColors = {
+            primary: '#667eea',
+            secondary: '#764ba2',
+            success: '#84fab0',
+            danger: '#f5576c',
+            warning: '#fd9e8a',
+            info: '#8fd3f4'
+        };
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

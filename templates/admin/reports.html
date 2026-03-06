@@ -1,0 +1,29 @@
+{% extends "admin/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="data-table">
+    <div class="table-header"><h5>Booking Reports</h5></div>
+    <canvas id="routeReportChart" height="120"></canvas>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const routeData = {{ route_stats|tojson }};
+const labels = routeData.map(r => r.route);
+const booked = routeData.map(r => r.booked);
+new Chart(document.getElementById('routeReportChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Total Pass Booked',
+            data: booked,
+            backgroundColor: 'rgba(102, 126, 234, 0.55)',
+            borderColor: '#667eea',
+            borderWidth: 1
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: true } } }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% block title %}Trips{% endblock %}
+{% block content %}
+<div class="data-table">
+    <div class="table-header"><h5>Trip History</h5></div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>ID</th><th>User</th><th>Route</th><th>From</th><th>To</th><th>Fare</th><th>Time</th></tr></thead>
+            <tbody>
+                {% for t in trips %}
+                <tr>
+                    <td>{{ t.id }}</td>
+                    <td>{{ t.user.full_name }}</td>
+                    <td>{{ t.route }}</td>
+                    <td>{{ t.boarding_point }}</td>
+                    <td>{{ t.drop_point }}</td>
+                    <td>INR {{ "%.2f"|format(t.fare or 0) }}</td>
+                    <td>{{ t.timestamp.strftime('%d %b %Y %I:%M %p') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">No trips yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -18,3 +18,7 @@ class Config:
     # Stripe settings
     STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
     STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+
+    # Admin settings
+    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME') or 'admin'
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or 'admin123'

@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="data-table">
+    <div class="table-header">
+        <h5>User Details</h5>
+        <form method="GET" class="d-flex gap-2">
+            <input class="form-control" name="q" value="{{ search }}" placeholder="Search users">
+            <button class="btn btn-primary">Search</button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>User Type</th><th>Created</th></tr></thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone }}</td>
+                    <td>{{ user.user_type|title }}</td>
+                    <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">No users found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

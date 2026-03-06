@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon" style="background:#e8f0ff;color:#2153a4;"><i class="fas fa-users"></i></div>
+            <div class="stats-value">{{ total_users }}</div>
+            <div class="stats-label">Users</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon" style="background:#e9fff5;color:#127c54;"><i class="fas fa-ticket-alt"></i></div>
+            <div class="stats-value">{{ total_passes }}</div>
+            <div class="stats-label">Total Passes</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon" style="background:#fff8e8;color:#a26a1e;"><i class="fas fa-indian-rupee-sign"></i></div>
+            <div class="stats-value">INR {{ "%.2f"|format(total_revenue) }}</div>
+            <div class="stats-label">Revenue</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon" style="background:#ffe9f2;color:#ad255f;"><i class="fas fa-route"></i></div>
+            <div class="stats-value">{{ route_stats|length }}</div>
+            <div class="stats-label">Routes</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="data-table">
+            <div class="table-header"><h5>Pass Bookings by Route</h5></div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th>Route</th><th>Booked</th><th>Revenue</th></tr></thead>
+                    <tbody>
+                        {% for row in route_stats %}
+                        <tr>
+                            <td>{{ row.route }}</td>
+                            <td>{{ row.booked }}</td>
+                            <td>INR {{ "%.2f"|format(row.revenue or 0) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3">No route bookings yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="data-table">
+            <div class="table-header"><h5>Pass Status</h5></div>
+            <canvas id="statusChart" height="220"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const statusRows = {{ pass_status_stats|tojson }};
+const labels = statusRows.map(row => row.status);
+const values = statusRows.map(row => row.count);
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: labels,
+        datasets: [{
+            data: values,
+            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+{% endblock %}

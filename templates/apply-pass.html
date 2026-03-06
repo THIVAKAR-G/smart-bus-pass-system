@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Apply for Pass · SmartBus</title>
     <!-- Bootstrap + icons + Inter font (match dashboard) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,10 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f5f9; }
-        .dashboard-container { display: flex; min-height: 100vh; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f5f9; overflow-x: hidden; }
+        .dashboard-container { display: flex; min-height: 100vh; width: 100%; position: relative; }
 
-        /* --- SIDEBAR (exactly same as modern dashboard) --- */
+        /* --- SIDEBAR (exactly same as modern dashboard with mobile fixes) --- */
         .sidebar {
             width: 280px;
             background: rgba(18, 25, 38, 0.95);
@@ -26,7 +26,173 @@
             flex-direction: column;
             border-right: 1px solid rgba(255,255,255,0.05);
             box-shadow: 4px 0 30px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
         }
+
+        /* Mobile sidebar fixes */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                height: 100vh;
+                z-index: 1050;
+                transition: left 0.3s ease;
+                box-shadow: none;
+            }
+            
+            .sidebar.show {
+                left: 0;
+                box-shadow: 4px 0 30px rgba(0,0,0,0.3);
+            }
+            
+            .sidebar-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1040;
+                backdrop-filter: blur(3px);
+            }
+            
+            .sidebar-backdrop.show {
+                display: block;
+            }
+            
+            .main-content {
+                width: 100%;
+                margin-left: 0 !important;
+            }
+            
+            .apply-wrapper {
+                padding: 16px !important;
+            }
+            
+            .apply-card {
+                padding: 24px 20px !important;
+                border-radius: 32px !important;
+            }
+            
+            .apply-card h2 {
+                font-size: 1.6rem !important;
+                margin-bottom: 1.2rem !important;
+            }
+            
+            .apply-card h2 i {
+                font-size: 1.4rem !important;
+                padding: 8px !important;
+            }
+            
+            .pass-type-selector {
+                gap: 12px !important;
+                margin: 20px 0 !important;
+            }
+            
+            .pass-type-card {
+                min-width: 100% !important;
+                padding: 20px 16px !important;
+            }
+            
+            .pass-type-card i {
+                font-size: 2.2rem !important;
+                margin-bottom: 12px !important;
+            }
+            
+            .pass-type-card .price {
+                font-size: 1.6rem !important;
+            }
+            
+            .price-breakdown {
+                padding: 20px !important;
+                margin: 24px 0 !important;
+            }
+            
+            .benefits-list {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+            
+            .alert-info {
+                padding: 18px 20px !important;
+            }
+            
+            .btn-primary {
+                padding: 14px 20px !important;
+                font-size: 1.1rem !important;
+            }
+            
+            .menu-toggle {
+                display: flex !important;
+            }
+            
+            .row.g-4 > [class*="col-"] {
+                padding: 0 8px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 992px) {
+            .sidebar {
+                width: 100px;
+            }
+            .sidebar-header h4, 
+            .user-info h6, 
+            .user-info small, 
+            .sidebar-nav span, 
+            .sidebar-footer .btn span {
+                display: none;
+            }
+            .sidebar-nav .nav-link {
+                justify-content: center;
+                padding: 16px 0;
+            }
+            .sidebar-footer {
+                padding: 16px;
+            }
+            .main-content {
+                width: calc(100% - 100px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .apply-card h2 {
+                font-size: 1.4rem !important;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .apply-card h2 i {
+                margin-right: 0 !important;
+            }
+            
+            .pass-type-card .price {
+                font-size: 1.4rem !important;
+            }
+            
+            .price-row.total {
+                font-size: 1.1rem !important;
+            }
+            
+            .form-control, .form-select {
+                padding: 12px 18px !important;
+                font-size: 0.95rem !important;
+            }
+            
+            .route-suggestion-item {
+                padding: 10px 16px !important;
+                font-size: 0.9rem !important;
+            }
+        }
+
         .sidebar-header { padding: 28px 24px 16px; display: flex; align-items: center; gap: 12px; }
         .sidebar-header i { color: #3b82f6; filter: drop-shadow(0 4px 8px rgba(59,130,246,0.3)); }
         .sidebar-header h4 { font-weight: 600; font-size: 1.4rem; letter-spacing: -0.02em; margin: 0; color: white; }
@@ -35,7 +201,7 @@
         .user-info h6 { font-weight: 600; margin: 12px 0 4px; font-size: 1.1rem; color: white; }
         .user-info small { background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 30px; font-weight: 500; color: #ddd; }
         .sidebar-nav { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
-        .sidebar-nav .nav-link { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 14px; color: rgba(255,255,255,0.75); font-weight: 500; transition: all 0.2s; font-size: 0.95rem; }
+        .sidebar-nav .nav-link { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 14px; color: rgba(255,255,255,0.75); font-weight: 500; transition: all 0.2s; font-size: 0.95rem; text-decoration: none; }
         .sidebar-nav .nav-link i { width: 24px; font-size: 1.2rem; color: rgba(255,255,255,0.5); }
         .sidebar-nav .nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
         .sidebar-nav .nav-link.active { background: #3b82f6; color: white; box-shadow: 0 8px 16px -4px rgba(59,130,246,0.4); }
@@ -44,7 +210,32 @@
         .btn-outline-light { border-radius: 40px; border-width: 1.5px; font-weight: 600; padding: 8px 0; backdrop-filter: blur(5px); }
 
         /* --- MAIN CONTENT area (matches dashboard) --- */
-        .main-content { flex: 1; background: #f2f5f9; overflow-y: auto; }
+        .main-content { 
+            flex: 1; 
+            background: #f2f5f9; 
+            overflow-y: auto; 
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Mobile menu toggle button */
+        .menu-toggle {
+            display: none;
+            background: white;
+            border: 1px solid #e9eef3;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            margin-right: 12px;
+        }
+        
+        .menu-toggle i {
+            font-size: 1.4rem;
+            color: #2c3e5c;
+        }
 
         /* apply page container – refreshed, clean */
         .apply-wrapper {
@@ -69,6 +260,8 @@
             font-size: 2.2rem;
             letter-spacing: -0.02em;
             margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
         }
 
         .apply-card h2 i { color: #3b82f6; background: #eef4ff; padding: 10px; border-radius: 30px; margin-right: 12px; }
@@ -126,6 +319,7 @@
             background: white;
             font-weight: 500;
             transition: 0.15s;
+            width: 100%;
         }
         .form-control:focus, .form-select:focus {
             border-color: #3b82f6;
@@ -206,18 +400,15 @@
         .modal-content { border-radius: 42px; padding: 16px; border: none; }
         .modal-header { border: none; padding-bottom: 0; }
         .modal-footer { border: none; }
-
-        @media (max-width: 992px) {
-            .sidebar { width: 100px; }
-            .sidebar-header h4, .user-info h6, .user-info small, .sidebar-nav span, .sidebar-footer .btn span { display: none; }
-            .sidebar-nav .nav-link { justify-content: center; padding: 16px 0; }
-        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar backdrop for mobile -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+        
         <!-- Sidebar (modern identical) -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-bus fa-2x"></i>
                 <h4>SmartBus Pass</h4>
@@ -244,6 +435,13 @@
         <!-- Main Content - Apply page -->
         <div class="main-content">
             <div class="apply-wrapper">
+                <!-- Mobile header with menu toggle -->
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+                
                 <div class="apply-card">
                     <h2><i class="fas fa-ticket-alt me-2"></i> Apply for bus pass</h2>
 
@@ -278,22 +476,31 @@
                             <input type="hidden" id="price" name="price" required>
                         </div>
 
-                        <!-- Route & date -->
+                        <!-- Route points & date -->
                         <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">2. Select route</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">2. Starting point</label>
                                 <div class="route-search">
-                                    <input type="text" class="form-control" id="routeInput" placeholder="Search route e.g. Downtown" autocomplete="off">
-                                    <input type="hidden" id="route" name="route" required>
-                                    <div class="route-suggestions" id="routeSuggestions"></div>
+                                    <input type="text" class="form-control" id="startingPointInput" placeholder="Search start location" autocomplete="off">
+                                    <input type="hidden" id="starting_point" name="starting_point" required>
+                                    <div class="route-suggestions" id="startingSuggestions"></div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">3. Start date</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">3. Ending point</label>
+                                <div class="route-search">
+                                    <input type="text" class="form-control" id="endingPointInput" placeholder="Search destination" autocomplete="off">
+                                    <input type="hidden" id="ending_point" name="ending_point" required>
+                                    <div class="route-suggestions" id="endingSuggestions"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">4. Start date</label>
                                 <input type="date" class="form-control" id="start_date" name="start_date" required 
                                        min="{{ now.date().isoformat() }}">
                             </div>
                         </div>
+                        <input type="hidden" id="route" name="route" required>
 
                         <!-- Auto renewal toggle modern -->
                         <div class="mb-5 p-3 bg-white rounded-5" style="border:1px solid #e9f0fa;">
@@ -366,151 +573,181 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-let selectedPassType = '';
-let selectedPrice = 0;
-
-// 🔑 MapTiler API Key
-const MAPTILER_API_KEY = "uCBXEjePDis0WAcvUmjc";
-
-function selectPassType(type, price) {
-
-    document.querySelectorAll('.pass-type-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-
-    event.currentTarget.classList.add('selected');
-
-    selectedPassType = type;
-    selectedPrice = price;
-
-    document.getElementById('pass_type').value = type;
-    document.getElementById('price').value = price;
-
-    updatePriceBreakdown(price);
-}
-
-function updatePriceBreakdown(price) {
-
-    const breakdown = document.getElementById('priceBreakdown');
-    breakdown.style.display = 'block';
-
-    const discountPercent = price >= 480 ? 25 : (price >= 135 ? 15 : 10);
-    const discount = price * discountPercent / 100;
-    const discountedPrice = price - discount;
-    const tax = discountedPrice * 0.05;
-    const total = discountedPrice + tax;
-
-    document.getElementById('basePrice').textContent = `₹${price.toFixed(2)}`;
-    document.getElementById('discountPercent').textContent = `${discountPercent}%`;
-    document.getElementById('discountAmount').textContent = `-₹${discount.toFixed(2)}`;
-    document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
-    document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
-}
-
-/////////////////////////////////////////////////////
-// 🌍 MapTiler Route Search
-/////////////////////////////////////////////////////
-
-document.getElementById('routeInput').addEventListener('input', async function(e) {
-
-    const query = e.target.value;
-    const suggestions = document.getElementById('routeSuggestions');
-
-    if(query.length < 3){
-        suggestions.style.display = "none";
-        return;
-    }
-
-    try {
-
-        const response = await fetch(
-        `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${MAPTILER_API_KEY}&limit=5`
-        );
-
-        const data = await response.json();
-
-        if(data.features.length > 0){
-
-            suggestions.innerHTML = data.features.map(place => {
-
-                const locationName = place.place_name;
-
-                return `
-                <div class="route-suggestion-item"
-                     onclick="selectRoute('${locationName}')">
-                     ${locationName}
-                </div>
-                `;
-
-            }).join("");
-
-            suggestions.style.display = "block";
-
-        }else{
-
-            suggestions.style.display = "none";
-
+    <script>
+        // Sidebar toggle function for mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.toggle('show');
+            backdrop.classList.toggle('show');
+            
+            // Prevent body scroll when sidebar is open on mobile
+            if (sidebar.classList.contains('show')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         }
 
-    }catch(error){
+        // Close sidebar when clicking on a nav link (mobile)
+        document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleSidebar();
+                }
+            });
+        });
 
-        console.error("MapTiler API Error:", error);
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                const sidebar = document.getElementById('sidebar');
+                const backdrop = document.getElementById('sidebarBackdrop');
+                sidebar.classList.remove('show');
+                backdrop.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        });
 
-    }
+        let selectedPassType = '';
+        let selectedPrice = 0;
 
-});
+        // 🔑 MapTiler API Key
+        const MAPTILER_API_KEY = "uCBXEjePDis0WAcvUmjc";
 
-function selectRoute(route){
+        function selectPassType(type, price, event) {
+            event.preventDefault();
+            
+            document.querySelectorAll('.pass-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
 
-    document.getElementById('routeInput').value = route;
-    document.getElementById('route').value = route;
+            event.currentTarget.classList.add('selected');
 
-    document.getElementById('routeSuggestions').style.display = 'none';
+            selectedPassType = type;
+            selectedPrice = price;
 
-}
+            document.getElementById('pass_type').value = type;
+            document.getElementById('price').value = price;
 
-/////////////////////////////////////////////////////
-// Close suggestions when clicking outside
-/////////////////////////////////////////////////////
+            updatePriceBreakdown(price);
+        }
 
-document.addEventListener('click', function(e){
+        function updatePriceBreakdown(price) {
+            const breakdown = document.getElementById('priceBreakdown');
+            breakdown.style.display = 'block';
 
-    if(!e.target.closest('.route-search')){
-        document.getElementById('routeSuggestions').style.display = 'none';
-    }
+            const discountPercent = price >= 480 ? 25 : (price >= 135 ? 15 : 10);
+            const discount = price * discountPercent / 100;
+            const discountedPrice = price - discount;
+            const tax = discountedPrice * 0.05;
+            const total = discountedPrice + tax;
 
-});
+            document.getElementById('basePrice').textContent = `₹${price.toFixed(2)}`;
+            document.getElementById('discountPercent').textContent = `${discountPercent}%`;
+            document.getElementById('discountAmount').textContent = `-₹${discount.toFixed(2)}`;
+            document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+        }
 
-/////////////////////////////////////////////////////
-// Set minimum start date
-/////////////////////////////////////////////////////
+        function updateRouteField() {
+            const start = document.getElementById('starting_point').value;
+            const end = document.getElementById('ending_point').value;
+            document.getElementById('route').value = (start && end) ? `${start} - ${end}` : '';
+        }
 
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('start_date').min = today;
+        function attachLocationAutocomplete(inputId, suggestionsId, hiddenFieldId, onSelected) {
+            const input = document.getElementById(inputId);
+            const suggestions = document.getElementById(suggestionsId);
+            const hiddenField = document.getElementById(hiddenFieldId);
 
-/////////////////////////////////////////////////////
-// Form validation
-/////////////////////////////////////////////////////
+            input.addEventListener('input', async function(e) {
+                const query = e.target.value.trim();
+                hiddenField.value = '';
+                onSelected();
 
-document.getElementById('applyPassForm').addEventListener('submit', function(e){
+                if (query.length < 3) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
 
-    if(!selectedPassType){
-        e.preventDefault();
-        alert("Please select a pass type");
-    }
+                try {
+                    const response = await fetch(
+                        `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${MAPTILER_API_KEY}&limit=5`
+                    );
 
-    if(!document.getElementById('route').value){
-        e.preventDefault();
-        alert("Please select a route");
-    }
+                    const data = await response.json();
 
-    if(!document.getElementById('terms').checked){
-        e.preventDefault();
-        alert("Please agree to the terms and conditions");
-    }
+                    if (data.features && data.features.length > 0) {
+                        suggestions.innerHTML = data.features.map(place => {
+                            const locationName = place.place_name;
+                            const escapedName = locationName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                            return `
+                                <div class="route-suggestion-item"
+                                     onclick="selectLocation('${inputId}', '${suggestionsId}', '${hiddenFieldId}', '${escapedName}')">
+                                     ${locationName}
+                                </div>
+                            `;
+                        }).join('');
+                        suggestions.style.display = 'block';
+                    } else {
+                        suggestions.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('MapTiler API Error:', error);
+                }
+            });
+        }
 
-});
-</script>
+        function selectLocation(inputId, suggestionsId, hiddenFieldId, location) {
+            document.getElementById(inputId).value = location;
+            document.getElementById(hiddenFieldId).value = location;
+            document.getElementById(suggestionsId).style.display = 'none';
+            updateRouteField();
+        }
+
+        attachLocationAutocomplete('startingPointInput', 'startingSuggestions', 'starting_point', updateRouteField);
+        attachLocationAutocomplete('endingPointInput', 'endingSuggestions', 'ending_point', updateRouteField);
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e){
+            if(!e.target.closest('.route-search')){
+                document.querySelectorAll('.route-suggestions').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+        });
+
+        // Set minimum start date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('start_date').min = today;
+
+        // Form validation
+        document.getElementById('applyPassForm').addEventListener('submit', function(e){
+            if(!selectedPassType){
+                e.preventDefault();
+                alert("Please select a pass type");
+                return;
+            }
+
+            if(!document.getElementById('starting_point').value){
+                e.preventDefault();
+                alert("Please select a starting point");
+                return;
+            }
+
+            if(!document.getElementById('ending_point').value){
+                e.preventDefault();
+                alert("Please select an ending point");
+                return;
+            }
+
+            if(!document.getElementById('terms').checked){
+                e.preventDefault();
+                alert("Please agree to the terms and conditions");
+                return;
+            }
+        });
+    </script>
 </body>
 </html>
