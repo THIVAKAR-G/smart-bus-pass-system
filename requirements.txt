@@ -7,4 +7,7 @@ qrcode==7.4.2
 python-dotenv==1.0.0
 Flask-Mail==0.9.1
 stripe==7.5.0
+reportlab==4.4.10
+gunicorn==22.0.0
+psycopg2-binary==2.9.9
 
